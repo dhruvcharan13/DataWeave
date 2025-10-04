@@ -4,8 +4,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Supabase Configuration
-SUPABASE_URL = os.getenv("SUPABASE_URL", "your_supabase_url_here")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "your_supabase_anon_key_here")
+SUPABASE_URL = "https://evqssjhxulcyjgkcvayi.supabase.co"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2cXNzamh4dWxjeWpna2N2YXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1NzkyMTYsImV4cCI6MjA3NTE1NTIxNn0.P6Sovir_c27XIltqDT_BwXAP7NdfKSE2c8xsjRAw6iQ"
+SUPABASE_SERVICE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2cXNzamh4dWxjeWpna2N2YXlpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1OTU3OTIxNiwiZXhwIjoyMDc1MTU1MjE2fQ.qwCoC6bo6bcg-wcMy8e0ReE8UpMXVGPDQkMgnu9lzHs"
+
+# Use service key for backend operations
+SUPABASE_KEY = SUPABASE_SERVICE_KEY
 
 # Backend Configuration
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
