@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "target": "es5",
+    "pretty": true,
+    "downlevelIteration": true,
+    "module": "commonjs",
+    "lib": [
+      "DOM",
+      "ES2015.Promise",
+      "ES5",
+      "ES6",
+      "ES2016",
+      "ESNext.AsyncIterable"
+    ],
+    // "skipLibCheck": true,
+    "importHelpers": true,
+    "jsx": "preserve",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitThis": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noEmit": true,
+    "incremental": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true
+  },
+  "exclude": [
+    "node_modules",
+    "jest",
+    "src/setupTests.ts",
+    ".git",
+    "src/tests"
+  ],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx"
+  ]
+}
