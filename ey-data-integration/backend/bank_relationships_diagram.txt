@@ -1,0 +1,134 @@
+BANK DATA RELATIONSHIPS AND MAPPINGS
+=====================================
+
+BANK 1 DATA STRUCTURE:
+┌─────────────────────────────────────────────────────────────┐
+│                    Bank1_Customer                          │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Primary Key: customerId                             │   │
+│  │ Key Fields: legalId, accountOfficerId              │   │
+│  │ Personal: givenName, lastName, email, phoneNumber  │   │
+│  │ Business: customerType, customerStatus             │   │
+│  │ Rows: 10,000 | Columns: 24                         │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                                │
+                                │ 1:Many
+                                ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Bank1_Accounts                          │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Primary Key: accountId                             │   │
+│  │ Foreign Key: customerId → Bank1_Customer          │   │
+│  │ Financial: availableBalance, currency, status      │   │
+│  │ Rows: 15,071 | Columns: 16                        │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                                │
+                                │ 1:Many
+                                ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  Bank1_Transactions                       │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Primary Key: transactionReference                   │   │
+│  │ Foreign Key: accountId → Bank1_Accounts            │   │
+│  │ Transaction: activity, amount, date, channel       │   │
+│  │ Rows: 74,604 | Columns: 23                        │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+
+BANK 2 DATA STRUCTURE:
+┌─────────────────────────────────────────────────────────────┐
+│                    Bank2_Customer                          │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Primary Key: encodedKey                            │   │
+│  │ Key Fields: id, assignedUserKey                    │   │
+│  │ Personal: firstName, lastName, emailAddress       │   │
+│  │ Business: clientType, state                        │   │
+│  │ Rows: 10,000 | Columns: 16                        │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                                │
+                                │ 1:Many
+                                ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Bank2_Accounts                          │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ Primary Key: encodedKey                            │   │
+│  │ Foreign Key: accountHolderKey → Bank2_Customer    │   │
+│  │ Financial: availableBalance, currencyCode, status │   │
+│  │ Rows: 19,756 | Columns: 25                       │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+
+CROSS-BANK MAPPINGS (High Confidence 90%+):
+═══════════════════════════════════════════════════════════════
+
+CUSTOMER MAPPINGS:
+┌─────────────────────────────────────────────────────────────┐
+│  Bank1_Customer.customerId ↔ Bank2_Customer.encodedKey    │
+│  Bank1_Customer.givenName ↔ Bank2_Customer.firstName      │
+│  Bank1_Customer.lastName ↔ Bank2_Customer.lastName        │
+│  Bank1_Customer.email ↔ Bank2_Customer.emailAddress       │
+│  Bank1_Customer.dateOfBirth ↔ Bank2_Customer.birthDate    │
+│  Bank1_Customer.gender ↔ Bank2_Customer.gender           │
+│  Bank1_Customer.customerType ↔ Bank2_Customer.clientType │
+└─────────────────────────────────────────────────────────────┘
+
+ACCOUNT MAPPINGS:
+┌─────────────────────────────────────────────────────────────┐
+│  Bank1_Accounts.accountId ↔ Bank2_Accounts.encodedKey      │
+│  Bank1_Accounts.customerId ↔ Bank2_Accounts.accountHolderKey│
+│  Bank1_Accounts.availableBalance ↔ Bank2_Accounts.availableBalance│
+│  Bank1_Accounts.currency ↔ Bank2_Accounts.currencyCode     │
+└─────────────────────────────────────────────────────────────┘
+
+MEDIUM CONFIDENCE MAPPINGS (80-90%):
+═══════════════════════════════════════════════════════════════
+┌─────────────────────────────────────────────────────────────┐
+│  Bank1_Customer.phoneNumber ↔ Bank2_Customer.homePhone    │
+└─────────────────────────────────────────────────────────────┘
+
+UNIFIED SCHEMA TARGET:
+═══════════════════════════════════════════════════════════════
+┌─────────────────────────────────────────────────────────────┐
+│                    Unified_Customer                         │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ customerId: unified_id                              │   │
+│  │ firstName: mapped from both banks                  │   │
+│  │ lastName: mapped from both banks                   │   │
+│  │ email: mapped from both banks                      │   │
+│  │ phone: mapped from both banks                       │   │
+│  │ dateOfBirth: mapped from both banks                 │   │
+│  │ gender: mapped from both banks                      │   │
+│  │ customerType: mapped from both banks                 │   │
+│  │ sourceBanks: ["bank1", "bank2"]                    │   │
+│  │ confidence: 0.95                                    │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+                                │
+                                │ 1:Many
+                                ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Unified_Accounts                         │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ accountId: unified_id                              │   │
+│  │ customerId: unified_customer_id                    │   │
+│  │ accountType: mapped from both banks                │   │
+│  │ balance: mapped from both banks                    │   │
+│  │ currency: mapped from both banks                   │   │
+│  │ status: mapped from both banks                     │   │
+│  │ sourceBanks: ["bank1", "bank2"]                    │   │
+│  │ confidence: 0.9                                     │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+
+INTEGRATION STRATEGY:
+═══════════════════════════════════════════════════════════════
+1. Upload Bank 1 and Bank 2 data files
+2. Analyze schemas and detect internal relationships
+3. Identify cross-bank field mappings using AI
+4. Validate mappings with confidence scores
+5. Create unified customer and account schemas
+6. Merge data while preserving relationships
+7. Export unified dataset with complete schema

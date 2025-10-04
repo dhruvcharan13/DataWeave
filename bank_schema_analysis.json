@@ -1,0 +1,323 @@
+{
+  "bank1_schema": {
+    "customer": {
+      "table": "Bank1_Customer",
+      "primary_key": "customerId",
+      "columns": [
+        "phoneNumber",
+        "smsNumber",
+        "email",
+        "street",
+        "addressCity",
+        "country",
+        "legalId",
+        "legalDocumentName",
+        "legalIssueAuthorised",
+        "legalIssueCountry",
+        "legalIssueDate",
+        "legalExpiredDate",
+        "language",
+        "dateOfBirth",
+        "customerStatus",
+        "accountOfficerId",
+        "gender",
+        "state",
+        "postCode",
+        "contactDate",
+        "lastName",
+        "givenName",
+        "customerType",
+        "customerId"
+      ],
+      "row_count": 10000,
+      "key_fields": [
+        "customerId",
+        "legalId",
+        "accountOfficerId"
+      ]
+    },
+    "accounts": {
+      "table": "Bank1_Accounts",
+      "primary_key": "accountId",
+      "foreign_keys": [
+        "customerId",
+        "productId"
+      ],
+      "columns": [
+        "accountId",
+        "displayName",
+        "customerId",
+        "customerRole",
+        "productId",
+        "status",
+        "currency",
+        "branch",
+        "accountOpeningDate",
+        "arrangementStartDate",
+        "availableBalance",
+        "onlineActualBalance",
+        "lockedAmount",
+        "availableLimit",
+        "productDescription",
+        "category"
+      ],
+      "row_count": 15071,
+      "key_fields": [
+        "accountId",
+        "customerId",
+        "productId"
+      ]
+    },
+    "transactions": {
+      "table": "Bank1_Transactions",
+      "primary_key": "transactionReference",
+      "foreign_keys": [
+        "accountId"
+      ],
+      "columns": [
+        "transactionReference",
+        "activity",
+        "transactionAmount",
+        "currency",
+        "effectiveDate",
+        "transactionDate",
+        "bookingDate",
+        "narrative",
+        "externalEventStatus",
+        "userRole",
+        "branch",
+        "accountId",
+        "chargesPaymentTypeName",
+        "chargesPropertyName",
+        "chargesChargeAmount",
+        "taxRate",
+        "availableBalance",
+        "lockedAmount",
+        "approvedOverdraftLimit",
+        "accrualAmount",
+        "effectiveRate",
+        "availableOverdraftLimit",
+        "channel"
+      ],
+      "row_count": 74604,
+      "key_fields": [
+        "transactionReference",
+        "accountId"
+      ]
+    }
+  },
+  "bank2_schema": {
+    "customer": {
+      "table": "Bank2_Customer",
+      "primary_key": "encodedKey",
+      "columns": [
+        "lastName",
+        "migrationEventKey",
+        "preferredLanguage",
+        "notes",
+        "gender",
+        "emailAddress",
+        "encodedKey",
+        "id",
+        "state",
+        "assignedUserKey",
+        "homePhone",
+        "creationDate",
+        "birthDate",
+        "firstName",
+        "mobilePhone",
+        "clientType"
+      ],
+      "row_count": 10000,
+      "key_fields": [
+        "encodedKey",
+        "id",
+        "assignedUserKey"
+      ]
+    },
+    "accounts": {
+      "table": "Bank2_Accounts",
+      "primary_key": "encodedKey",
+      "foreign_keys": [
+        "accountHolderKey",
+        "productTypeKey"
+      ],
+      "columns": [
+        "encodedKey",
+        "id",
+        "name",
+        "productTypeKey",
+        "currencyCode",
+        "accountHolderKey",
+        "accountHolderType",
+        "assignedBranchKey",
+        "notes",
+        "maturityDate",
+        "creationDate",
+        "closedDate",
+        "assignedUserKey",
+        "totalBalance",
+        "availableBalance",
+        "interestAccrued",
+        "ownershipHistory",
+        "accountType",
+        "interestRate",
+        "interestPaymentPoint",
+        "status",
+        "accountState",
+        "lockedBalance",
+        "overdraftAmount",
+        "productDescription"
+      ],
+      "row_count": 19756,
+      "key_fields": [
+        "encodedKey",
+        "id",
+        "accountHolderKey",
+        "productTypeKey"
+      ]
+    }
+  },
+  "relationships": [
+    {
+      "source_table": "Bank1_Customer",
+      "source_column": "customerId",
+      "target_table": "Bank1_Accounts",
+      "target_column": "customerId",
+      "relationship_type": "one_to_many",
+      "description": "Customer can have multiple accounts"
+    },
+    {
+      "source_table": "Bank1_Accounts",
+      "source_column": "accountId",
+      "target_table": "Bank1_Transactions",
+      "target_column": "accountId",
+      "relationship_type": "one_to_many",
+      "description": "Account can have multiple transactions"
+    },
+    {
+      "source_table": "Bank2_Customer",
+      "source_column": "encodedKey",
+      "target_table": "Bank2_Accounts",
+      "target_column": "accountHolderKey",
+      "relationship_type": "one_to_many",
+      "description": "Customer can have multiple accounts"
+    }
+  ],
+  "cross_bank_mappings": [
+    {
+      "bank1_table": "Bank1_Customer",
+      "bank1_column": "customerId",
+      "bank2_table": "Bank2_Customer",
+      "bank2_column": "encodedKey",
+      "mapping_type": "primary_key",
+      "confidence": 0.9,
+      "description": "Customer primary identifiers"
+    },
+    {
+      "bank1_table": "Bank1_Customer",
+      "bank1_column": "givenName",
+      "bank2_table": "Bank2_Customer",
+      "bank2_column": "firstName",
+      "mapping_type": "field_mapping",
+      "confidence": 0.95,
+      "description": "Customer first names"
+    },
+    {
+      "bank1_table": "Bank1_Customer",
+      "bank1_column": "lastName",
+      "bank2_table": "Bank2_Customer",
+      "bank2_column": "lastName",
+      "mapping_type": "field_mapping",
+      "confidence": 0.95,
+      "description": "Customer last names"
+    },
+    {
+      "bank1_table": "Bank1_Customer",
+      "bank1_column": "email",
+      "bank2_table": "Bank2_Customer",
+      "bank2_column": "emailAddress",
+      "mapping_type": "field_mapping",
+      "confidence": 0.9,
+      "description": "Customer email addresses"
+    },
+    {
+      "bank1_table": "Bank1_Customer",
+      "bank1_column": "phoneNumber",
+      "bank2_table": "Bank2_Customer",
+      "bank2_column": "homePhone",
+      "mapping_type": "field_mapping",
+      "confidence": 0.8,
+      "description": "Customer phone numbers"
+    },
+    {
+      "bank1_table": "Bank1_Customer",
+      "bank1_column": "dateOfBirth",
+      "bank2_table": "Bank2_Customer",
+      "bank2_column": "birthDate",
+      "mapping_type": "field_mapping",
+      "confidence": 0.95,
+      "description": "Customer birth dates"
+    },
+    {
+      "bank1_table": "Bank1_Customer",
+      "bank1_column": "gender",
+      "bank2_table": "Bank2_Customer",
+      "bank2_column": "gender",
+      "mapping_type": "field_mapping",
+      "confidence": 0.95,
+      "description": "Customer gender"
+    },
+    {
+      "bank1_table": "Bank1_Customer",
+      "bank1_column": "customerType",
+      "bank2_table": "Bank2_Customer",
+      "bank2_column": "clientType",
+      "mapping_type": "field_mapping",
+      "confidence": 0.9,
+      "description": "Customer type classification"
+    },
+    {
+      "bank1_table": "Bank1_Accounts",
+      "bank1_column": "accountId",
+      "bank2_table": "Bank2_Accounts",
+      "bank2_column": "encodedKey",
+      "mapping_type": "primary_key",
+      "confidence": 0.9,
+      "description": "Account primary identifiers"
+    },
+    {
+      "bank1_table": "Bank1_Accounts",
+      "bank1_column": "customerId",
+      "bank2_table": "Bank2_Accounts",
+      "bank2_column": "accountHolderKey",
+      "mapping_type": "foreign_key",
+      "confidence": 0.9,
+      "description": "Account to customer relationships"
+    },
+    {
+      "bank1_table": "Bank1_Accounts",
+      "bank1_column": "availableBalance",
+      "bank2_table": "Bank2_Accounts",
+      "bank2_column": "availableBalance",
+      "mapping_type": "field_mapping",
+      "confidence": 0.95,
+      "description": "Account available balance"
+    },
+    {
+      "bank1_table": "Bank1_Accounts",
+      "bank1_column": "currency",
+      "bank2_table": "Bank2_Accounts",
+      "bank2_column": "currencyCode",
+      "mapping_type": "field_mapping",
+      "confidence": 0.9,
+      "description": "Account currency"
+    }
+  ],
+  "summary": {
+    "bank1_tables": 3,
+    "bank2_tables": 2,
+    "internal_relationships": 3,
+    "cross_bank_mappings": 12
+  }
+}
