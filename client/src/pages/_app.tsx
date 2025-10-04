@@ -1,14 +1,15 @@
 // pages/_app.tsx
-import { CssBaseline, Theme, ThemeProvider } from '@mui/material';
-import type { AppProps } from 'next/app';
-import { Provider, useSelector } from 'react-redux';
-import ResponsiveAppBar from '../components/appBar';
-import { AppState } from '../store/appState';
-import '../styles/globals.css';
-import { ThemeMode } from '../ui/slice';
-import { getTheme } from '../ui/theme';
-import { store, persistor } from '../store/store';
-import { PersistGate } from 'redux-persist/integration/react';
+import { CssBaseline, Theme, ThemeProvider } from "@mui/material";
+import type { AppProps } from "next/app";
+import { Provider, useSelector } from "react-redux";
+import ResponsiveAppBar from "../components/appBar";
+import { AppState } from "../store/appState";
+import "../styles/globals.css";
+import { ThemeMode } from "../ui/slice";
+import { getTheme } from "../ui/theme";
+import { store, persistor } from "../store/store";
+import { PersistGate } from "redux-persist/integration/react";
+import { Container } from "@mui/material";
 
 function ThemedApp({ Component, pageProps }: AppProps) {
   const themeMode: ThemeMode = useSelector(
@@ -20,7 +21,9 @@ function ThemedApp({ Component, pageProps }: AppProps) {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <ResponsiveAppBar />
-      <Component {...pageProps} />
+      <Container maxWidth="lg" sx={{ my: 2 }}>
+        <Component {...pageProps} />
+      </Container>
     </ThemeProvider>
   );
 }
