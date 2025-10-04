@@ -112,7 +112,7 @@ class DualBankAnalyzer:
                         'field_name': header,
                         'data_type': self._infer_data_type(header, ''),
                         'is_identifier': any(term in header.lower() for term in ['id', 'key', 'reference']),
-                        'is_foreign_key': any(term in header.lower() for term in ['customer', 'account', 'client']),
+                        'is_foreign_key': self._is_foreign_key_field(header),
                         'sample_values': [],  # Will be populated when data is uploaded
                         'null_count': 0,      # Will be populated when data is uploaded
                         'unique_count': 0     # Will be populated when data is uploaded
@@ -171,6 +171,38 @@ class DualBankAnalyzer:
         
         # Default
         return 'text'
+    
+    def _is_foreign_key_field(self, field_name: str) -> bool:
+        """Determine if a field is likely a foreign key"""
+        field_lower = field_name.lower()
+        
+        # Common foreign key patterns
+        fk_patterns = [
+            'customerid',      # customerId
+            'accountid',       # accountId  
+            'clientkey',       # clientKey
+            'parentkey',       # parentKey
+            'accountholderkey', # accountHolderKey
+            'assigneduserkey',  # assignedUserKey
+            'assignedbranchkey', # assignedBranchKey
+            'producttypekey',   # productTypeKey
+            'userkey',         # userKey
+            'branchkey',       # branchKey
+            'externalid',      # externalId
+            'documentid',      # documentId
+            'migrationeventkey' # migrationEventKey
+        ]
+        
+        # Check for exact matches with common FK patterns
+        for pattern in fk_patterns:
+            if pattern in field_lower:
+                return True
+        
+        # Check for ID fields that reference other entities
+        if field_lower.endswith('id') and any(entity in field_lower for entity in ['customer', 'account', 'client', 'user', 'branch', 'product']):
+            return True
+            
+        return False
     
     def _analyze_relationships(self, tables: List[Dict]) -> List[Dict]:
         """Analyze potential relationships between tables"""
