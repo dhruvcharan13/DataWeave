@@ -1,0 +1,15 @@
+html,
+body {
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+div {
+  box-sizing: border-box !important;
+}
