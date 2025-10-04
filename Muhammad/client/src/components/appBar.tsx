@@ -22,7 +22,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { useRouter } from "next/router";
 import styled from "styled-components";
 
-const pages = ["dashboard", "page2"];
+const pages = [];
 const themeOptions: ThemeMode[] = ["light", "dark"];
 
 function ResponsiveAppBar() {
