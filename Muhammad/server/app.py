@@ -71,6 +71,12 @@ async def upload_files(
         source_dir = os.path.join(user_dir, "source")
         target_dir = os.path.join(user_dir, "target")
         
+        # Remove existing directories if they exist
+        if os.path.exists(user_dir):
+            import shutil
+            shutil.rmtree(user_dir)
+            
+        # Create fresh directories
         os.makedirs(source_dir, exist_ok=True)
         os.makedirs(target_dir, exist_ok=True)
         
