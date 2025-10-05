@@ -167,12 +167,9 @@ async def upload_files(
 @app.post("/api/generate-suggested-mapping")
 async def generate_suggested_mapping(schema_analysis: dict):
     try:
-        print(schema_analysis)
         source_database = schema_analysis["source"]
         target_database = schema_analysis["target"]
 
-        print(source_database)
-        print(target_database)
         mapping_prompt = generate_mapping_prompt(source_database, target_database)
 
         mapping_response = await generate_text(mapping_prompt)

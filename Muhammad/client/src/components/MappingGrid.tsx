@@ -177,7 +177,7 @@ export default function MappingGrid({ data = [] }) {
     {
       field: "transform",
       headerName: "Transform",
-      width: 500,
+      width: 450,
       headerAlign: "center",
       align: "left",
       renderCell: (params) => {
@@ -193,7 +193,7 @@ export default function MappingGrid({ data = [] }) {
     {
       field: "rationale",
       headerName: "Rationale",
-      minWidth: 700,
+      minWidth: 650,
       flex: 1,
       headerAlign: "center",
       align: "left",
