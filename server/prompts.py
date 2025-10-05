@@ -31,18 +31,6 @@ You are an expert data integration assistant named DataWeave AI. Your role is to
 Your response must be a single JSON object, no comments, no additional explanation.  
 Follow the structure and rules below exactly.
 
----
-
-### OBJECTIVE
-Unify Dataset A and Dataset B into a merged dataset by:
-1. Mapping fields (A → B)
-2. Documenting every transformation applied
-3. Preserving all data (no data drops)
-4. Explaining rationale and confidence
-5. Suggesting how to handle unmapped or extra fields
-6. Producing metadata that can be used for the final schema and documentation
-
----
 
 ### NO DATA LOSS POLICY
 - **No data should ever be dropped.**
@@ -74,8 +62,6 @@ All applied transformations must also be listed under `"applied_transformations"
   "model": "gemini-2.5-lite",
   "source_dataset": {{ "name": "DatasetA" }},
   "target_dataset": {{ "name": "DatasetB" }},
-  "assumptions": ["<short assumptions about mapping or normalization>"],
-
   "mappings": [
     {{
       "id": "<stable_id>",
@@ -95,68 +81,6 @@ All applied transformations must also be listed under `"applied_transformations"
       }}
     }}
   ],
-
-  "key_strategies": [
-    {{
-      "domain": "<domain>",
-      "primary_keys": [
-        {{ "table": "<A_table>", "columns": ["<col>", "..."] }},
-        {{ "table": "<B_table>", "columns": ["<col>", "..."] }}
-      ],
-      "join_keys": [
-        {{
-          "source": {{ "table": "<A_table>", "columns": ["<col>", "..."] }},
-          "target": {{ "table": "<B_table>", "columns": ["<col>", "..."] }}
-        }}
-      ],
-      "fallback_match": [
-        {{ "source": ["<A_col>"], "target": ["<B_col>"], "strategy": "exact|fuzzy" }}
-      ]
-    }}
-  ],
-
-  "output_plans": [
-    {{
-      "output_table": "<merged_table_name>",
-      "join": {{
-        "type": "left|right|inner|full_outer",
-        "left": {{ "table": "<A_table>", "on": ["<col>", "..."] }},
-        "right": {{ "table": "<B_table>", "on": ["<col>", "..."] }},
-        "fallback_on": [{{ "left": "<A_col>", "right": "<B_col>" }}]
-      }},
-      "dedupe": {{
-        "keys": ["<col>", "..."],
-        "strategy": "prefer_right_non_null|custom",
-        "tie_breaker": "<field or rule>"
-      }},
-      "use_mappings": ["<mapping_id>", "..."]
-    }}
-  ],
-
-  "applied_transformations": [
-    {{
-      "id": "<mapping_id>",
-      "table": "<merged_table>",
-      "column": "<col>",
-      "transform": "<type>",
-      "description": "<summary of what was done>"
-    }}
-  ],
-
-  "documentation": {{
-    "change_log": [
-      {{
-        "mapping_id": "<mapping_id>",
-        "description": "<summary of change>",
-        "reason": "<why the mapping/transform/merge was made>",
-        "timestamp": "<ISO8601_UTC>"
-      }}
-    ],
-    "review": {{
-      "status": "pending",
-      "notes": "<any caveats to confirm manually>"
-    }}
-  }}
 }}
 
 ---
