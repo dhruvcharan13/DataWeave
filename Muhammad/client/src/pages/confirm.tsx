@@ -66,9 +66,6 @@ export default function Confirm() {
 
       console.log('Sending upload request to backend...');
       console.log('FormData entries:');
-      for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-      }
       
               const uploadResponse = await fetch('http://localhost:8000/upload-files', {
                 method: 'POST',
