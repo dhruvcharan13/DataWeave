@@ -165,17 +165,28 @@ async def upload_files(
 
 
 @app.post("/api/generate-suggested-mapping")
-async def generate_suggested_mapping(schema_analysis: dict, user_id: str):
+async def generate_suggested_mapping(schema_analysis: dict):
     try:
-        source_database = schema_analysis["source"]["database"]
-        target_database = schema_analysis["target"]["database"]
+        print(schema_analysis)
+        source_database = schema_analysis["source"]
+        target_database = schema_analysis["target"]
 
+        print(source_database)
+        print(target_database)
         mapping_prompt = generate_mapping_prompt(source_database, target_database)
 
         mapping_response = await generate_text(mapping_prompt)
 
+        json_match = re.search(r'```(?:json)?\s*({[\s\S]*?})\s*```', mapping_response)
+        if json_match:
+            mapping_response = json.loads(json_match.group(1))
+        else:
+            try:
+                mapping_response = json.loads(mapping_response)
+            except json.JSONDecodeError:
+                raise ValueError("Failed to parse mapping response")
         
-        print(mapping_response) 
+        return {"mapping_response": mapping_response}
     except Exception as e:
         print(f"Error during suggested mapping generation: {str(e)}")
         return JSONResponse(

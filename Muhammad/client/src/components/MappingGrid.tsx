@@ -1,12 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import {
-  Box,
-  Typography,
-  Chip,
-  Select,
-  MenuItem,
-} from "@mui/material";
+import { Box, Typography, Chip, Select, MenuItem } from "@mui/material";
 
 export default function MappingGrid({ data = [] }) {
   const [rows, setRows] = useState(
@@ -41,30 +35,32 @@ export default function MappingGrid({ data = [] }) {
       align: "center",
     },
     {
-        field: "source",
-        headerName: "Source (Table.Column)",
-        width: 250,
-        headerAlign: "center",
-        align: "left",
-        renderCell: (params) => {
-          const table = params.value?.table || "";
-          const column = params.value?.column || "";
-          return (
-            <Box sx={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, color: "#fff" }}>
-                {table}
-              </Typography>
-              <Typography
-                variant="caption"
-                sx={{ color: "#aaa", fontSize: "0.75rem" }}
-              >
-                {column}
-              </Typography>
-            </Box>
-          );
-        },
+      field: "source",
+      headerName: "Source (Table.Column)",
+      width: 250,
+      headerAlign: "center",
+      align: "left",
+      renderCell: (params) => {
+        const table = params.value?.table || "";
+        const column = params.value?.column || "";
+        return (
+          <Box
+            sx={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}
+          >
+            <Typography variant="body2" sx={{ fontWeight: 600, color: "#fff" }}>
+              {table}
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{ color: "#aaa", fontSize: "0.75rem" }}
+            >
+              {column}
+            </Typography>
+          </Box>
+        );
       },
-      
+    },
+
     {
       field: "target",
       headerName: "Target (Table.Column)",
@@ -77,7 +73,7 @@ export default function MappingGrid({ data = [] }) {
             ? `${params.value.table}.${params.value.column}`
             : "";
         return (
-            <Select
+          <Select
             value={current}
             size="small"
             variant="outlined"
@@ -132,7 +128,13 @@ export default function MappingGrid({ data = [] }) {
             </MenuItem>
             {targetOptions.map((opt) => (
               <MenuItem key={opt} value={opt}>
-                <Box sx={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    lineHeight: 1.2,
+                  }}
+                >
                   <Typography variant="body2" sx={{ fontWeight: 600 }}>
                     {opt.split(".")[0]}
                   </Typography>
@@ -146,7 +148,6 @@ export default function MappingGrid({ data = [] }) {
               </MenuItem>
             ))}
           </Select>
-          
         );
       },
     },
@@ -158,11 +159,7 @@ export default function MappingGrid({ data = [] }) {
       align: "center",
       renderCell: (params) => (
         <Chip
-          label={
-            params.value
-              ? `${(params.value * 100).toFixed(0)}%`
-              : "—"
-          }
+          label={params.value ? `${(params.value * 100).toFixed(0)}%` : "—"}
           color={
             !params.value
               ? "error"
@@ -227,43 +224,40 @@ export default function MappingGrid({ data = [] }) {
 
   return (
     <Box>
-      <Typography variant="h6" gutterBottom>
-        Data Mapping Overview
-      </Typography>
       <Box sx={{ height: "80vh", width: "100%", overflow: "auto" }}>
         <Box sx={{ minWidth: "fit-content", width: "100%" }}>
-        <DataGrid
-  rows={rows}
-  columns={columns}
-  getRowClassName={getRowClassName}
-  checkboxSelection
-  disableColumnMenu
-  disableRowSelectionOnClick
-  getRowHeight={() => 'auto'}         // 🔹 Let rows expand to fit content
-  rowHeight={64}                      // (optional fallback) slightly taller baseline
-  sx={{
-    border: 'none',
-    '& .MuiDataGrid-columnHeaders': {
-      backgroundColor: '#121212',
-      color: '#fff',
-      fontWeight: 'bold',
-      position: 'sticky',
-      top: 0,
-      zIndex: 1,
-    },
-    '& .row-unmapped': {
-      backgroundColor: '#4a0000 !important',
-      color: '#fff',
-    },
-    '& .MuiDataGrid-cell': {
-      whiteSpace: 'normal',
-      padding: '8px',
-      display: 'flex',
-      alignItems: 'center',
-      lineHeight: 1.3,
-    },
-  }}
-/>
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            getRowClassName={getRowClassName}
+            checkboxSelection
+            disableColumnMenu
+            disableRowSelectionOnClick
+            getRowHeight={() => "auto"} // 🔹 Let rows expand to fit content
+            rowHeight={64} // (optional fallback) slightly taller baseline
+            sx={{
+              border: "none",
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: "#121212",
+                color: "#fff",
+                fontWeight: "bold",
+                position: "sticky",
+                top: 0,
+                zIndex: 1,
+              },
+              "& .row-unmapped": {
+                backgroundColor: "#4a0000 !important",
+                color: "#fff",
+              },
+              "& .MuiDataGrid-cell": {
+                whiteSpace: "normal",
+                padding: "8px",
+                display: "flex",
+                alignItems: "center",
+                lineHeight: 1.3,
+              },
+            }}
+          />
         </Box>
       </Box>
     </Box>

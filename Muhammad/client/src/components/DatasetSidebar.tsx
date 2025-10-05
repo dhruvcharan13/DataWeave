@@ -1,5 +1,5 @@
 "use client";
-
+import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import React, { useState, useRef, useEffect } from "react";
 import {
   Drawer,
@@ -9,6 +9,8 @@ import {
   Collapse,
   Typography,
   Box,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import {
   ExpandLess,
@@ -16,17 +18,26 @@ import {
   Storage,
   TableChartOutlined,
 } from "@mui/icons-material";
-
+import { generateSuggestedMapping } from "../utils/api";
+import router from "next/router";
 
 interface SidebarProps {
   selected: string;
   onSelect: (dataset: string) => void;
+  setIsLoading: (isLoading: boolean) => void;
 }
 
-
-export default function DatasetSidebar({ selected, onSelect }: SidebarProps) {
-  const [expandedBanks, setExpandedBanks] = useState<{ [key: string]: boolean }>({});
-  const [expandedTables, setExpandedTables] = useState<{ [key: string]: boolean }>({});
+export default function DatasetSidebar({
+  selected,
+  onSelect,
+  setIsLoading,
+}: SidebarProps) {
+  const [expandedBanks, setExpandedBanks] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [expandedTables, setExpandedTables] = useState<{
+    [key: string]: boolean;
+  }>({});
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const [isResizing, setIsResizing] = useState(false);
   const [schemas, setSchemas] = useState<any>({});
@@ -52,7 +63,6 @@ export default function DatasetSidebar({ selected, onSelect }: SidebarProps) {
     if (newWidth > 220 && newWidth < 600) setSidebarWidth(newWidth);
   };
 
-  
   useEffect(() => {
     window.addEventListener("mousemove", resize);
     window.addEventListener("mouseup", stopResize);
@@ -65,17 +75,17 @@ export default function DatasetSidebar({ selected, onSelect }: SidebarProps) {
   useEffect(() => {
     const stored = localStorage.getItem("schemaAnalysis");
     if (!stored) return;
-  
+
     try {
       const parsed = JSON.parse(stored);
       const formatted: any = {};
-  
+
       ["source", "target"].forEach((key) => {
         const db = parsed[key];
         if (!db || !db.tables) return;
-  
-     //  Always use simple readable names
-let dbName = key === "target" ? "Target" : "Source";
+
+        //  Always use simple readable names
+        let dbName = key === "target" ? "Target" : "Source";
 
         formatted[dbName] = {
           tables: db.tables.map((table: any) => ({
@@ -86,39 +96,43 @@ let dbName = key === "target" ? "Target" : "Source";
           })),
         };
       });
-  
+
       console.log("✅ Loaded schemas:", formatted);
       setSchemas(formatted);
     } catch (err) {
       console.error("Failed to parse schemaAnalysis:", err);
     }
   }, []);
-  
-  
-  console.log("📂 All schemas:", Object.keys(schemas));
 
+  const handleProceedWithMapping = async () => {
+    setIsLoading(true);
+    const schemaData = localStorage.getItem("schemaAnalysis");
+    const response = await generateSuggestedMapping(JSON.parse(schemaData));
+    localStorage.setItem("suggestedMapping", JSON.stringify({...response}));
+    setIsLoading(false);
+    router.push("/suggested-mapping");
+  };
 
   return (
     <Drawer
-  variant="permanent"
-  anchor="left"
-  sx={{
-    width: sidebarWidth,
-    flexShrink: 0,
-    "& .MuiDrawer-paper": {
-      width: sidebarWidth,
-      boxSizing: "border-box",
-      bgcolor: "background.paper",
-      borderRight: "1px solid",
-      borderColor: "divider",
-      position: "fixed",   // ✅ key fix: stick to viewport edge
-      left: 0,             // ✅ force it to the very edge
-      top: 72,
-      height: "90%",     // ✅ ensure full height
-    },
-  }}
->
-
+      variant="permanent"
+      anchor="left"
+      sx={{
+        width: sidebarWidth,
+        flexShrink: 0,
+        "& .MuiDrawer-paper": {
+          width: sidebarWidth,
+          boxSizing: "border-box",
+          bgcolor: "background.paper",
+          borderRight: "1px solid",
+          borderColor: "divider",
+          position: "fixed", // ✅ key fix: stick to viewport edge
+          left: 0, // ✅ force it to the very edge
+          top: 72,
+          height: "90%", // ✅ ensure full height
+        },
+      }}
+    >
       <Box sx={{ p: 2 }}>
         <Box display="flex" alignItems="center" gap={1} mb={2}>
           <Storage color="primary" />
@@ -133,14 +147,42 @@ let dbName = key === "target" ? "Target" : "Source";
             <React.Fragment key={bank}>
               <ListItemButton
                 selected={selected === bank}
-                onClick={() => {
+                onClick={(e) => {
                   onSelect(bank);
                   toggleBankExpand(bank);
+                  e.stopPropagation();
                 }}
               >
                 <ListItemText
-                  primary={bank}
-                  primaryTypographyProps={{ fontWeight: 600, fontSize: "0.95rem" }}
+                  primary={
+                    <Box display="flex" alignItems="center" gap={1}>
+                      {bank}
+                      {selected !== bank && (
+                        <Tooltip title="View dataset">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSelect(bank);
+                            }}
+                            sx={{
+                              p: 0.5,
+                              "&:hover": {
+                                color: "primary.main",
+                                backgroundColor: "action.hover",
+                              },
+                            }}
+                          >
+                            <RemoveRedEyeIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Box>
+                  }
+                  primaryTypographyProps={{
+                    fontWeight: 600,
+                    fontSize: "0.95rem",
+                  }}
                 />
                 {expandedBanks[bank] ? <ExpandLess /> : <ExpandMore />}
               </ListItemButton>
@@ -148,7 +190,7 @@ let dbName = key === "target" ? "Target" : "Source";
               <Collapse in={expandedBanks[bank]} timeout="auto" unmountOnExit>
                 <List component="div" disablePadding sx={{ pl: 2 }}>
                   {/* {sampleSchemas[bank].tables.map((table) => ( */}
-                  {schemas[bank]?.tables?.map((table: any) => (  
+                  {schemas[bank]?.tables?.map((table: any) => (
                     <React.Fragment key={table.name}>
                       <ListItemButton
                         onClick={() => toggleTableExpand(table.name)}
@@ -167,13 +209,29 @@ let dbName = key === "target" ? "Target" : "Source";
                           }}
                         />
                         {expandedTables[table.name] ? (
-                          <ExpandLess fontSize="small" />
+                          <ExpandLess
+                            fontSize="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleTableExpand(table.name);
+                            }}
+                          />
                         ) : (
-                          <ExpandMore fontSize="small" />
+                          <ExpandMore
+                            fontSize="small"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleTableExpand(table.name);
+                            }}
+                          />
                         )}
                       </ListItemButton>
 
-                      <Collapse in={expandedTables[table.name]} timeout="auto" unmountOnExit>
+                      <Collapse
+                        in={expandedTables[table.name]}
+                        timeout="auto"
+                        unmountOnExit
+                      >
                         <List component="div" disablePadding sx={{ pl: 4 }}>
                           {table.columns.map((col) => (
                             <ListItemButton key={col} disableRipple>
@@ -197,44 +255,43 @@ let dbName = key === "target" ? "Target" : "Source";
           ))}
         </List>
 
-{/* Proceed button now scrolls naturally with content */}
-<Box sx={{ mt: 2, textAlign: "center" }}>
-  <Box
-    component="button"
-    onClick={() => window.location.href = "/mapping"}
-    style={{
-      width: "100%",
-      padding: "10px 0",
-      background: "#1976d2",
-      border: "none",
-      borderRadius: "8px",
-      color: "white",
-      fontWeight: 600,
-      fontSize: "0.9rem",
-      cursor: "pointer",
-    }}
-    onMouseOver={(e) => (e.currentTarget.style.background = "#1565c0")}
-    onMouseOut={(e) => (e.currentTarget.style.background = "#1976d2")}
-  >
-    Proceed to Mapping →
-  </Box>
-</Box>
-</Box>
+        {/* Proceed button now scrolls naturally with content */}
+        <Box sx={{ mt: 2, textAlign: "center" }}>
+          <Box
+            component="button"
+            onClick={handleProceedWithMapping}
+            style={{
+              width: "100%",
+              padding: "10px 0",
+              background: "#1976d2",
+              border: "none",
+              borderRadius: "8px",
+              color: "white",
+              fontWeight: 600,
+              fontSize: "0.9rem",
+              cursor: "pointer",
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.background = "#1565c0")}
+            onMouseOut={(e) => (e.currentTarget.style.background = "#1976d2")}
+          >
+            Proceed to Mapping →
+          </Box>
+        </Box>
+      </Box>
 
-{/* ✅ Draggable resize bar */}
-<Box
-onMouseDown={startResize}
-sx={{
-  position: "absolute",
-  top: 0,
-  right: 0,
-  width: "5px",
-  height: "100%",
-  cursor: "col-resize",
-  "&:hover": { bgcolor: "action.hover" },
-}}
-/>
-</Drawer>
-
+      {/* ✅ Draggable resize bar */}
+      <Box
+        onMouseDown={startResize}
+        sx={{
+          position: "absolute",
+          top: 0,
+          right: 0,
+          width: "5px",
+          height: "100%",
+          cursor: "col-resize",
+          "&:hover": { bgcolor: "action.hover" },
+        }}
+      />
+    </Drawer>
   );
 }

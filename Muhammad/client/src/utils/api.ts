@@ -67,3 +67,30 @@ export const uploadFiles = async (sourceFiles: File[], targetFiles: File[]): Pro
     throw error;
   }
 };
+
+export const generateSuggestedMapping = async (schemaAnalysis: SchemaAnalysis) => {
+  try {
+
+    const response = await fetch(`${API_BASE_URL}/api/generate-suggested-mapping`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...schemaAnalysis,
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to generate mapping');
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error getting suggested mapping:', error);
+    throw error;
+  }
+};
+  
