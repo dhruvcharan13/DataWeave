@@ -10,6 +10,8 @@ import { getTheme } from "../ui/theme";
 import { store, persistor } from "../store/store";
 import { PersistGate } from "redux-persist/integration/react";
 import { Container } from "@mui/material";
+import "../components/graphStyles.css";
+
 
 function ThemedApp({ Component, pageProps }: AppProps) {
   const themeMode: ThemeMode = useSelector(

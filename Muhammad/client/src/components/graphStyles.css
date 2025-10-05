@@ -1,0 +1,20 @@
+/* === Custom dark theme for React Flow controls === */
+.custom-controls {
+    bottom: 20px !important;
+    left: 20px !important;
+    background: #1e1e1e !important;
+    border-radius: 8px !important;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.4) !important;
+  }
+  
+  .custom-controls .react-flow__controls-button {
+    background-color: #333 !important;
+    color: #fff !important;
+    border-radius: 6px !important;
+    border: 1px solid #444 !important;
+  }
+  
+  .custom-controls .react-flow__controls-button:hover {
+    background-color: #555 !important;
+  }
+  

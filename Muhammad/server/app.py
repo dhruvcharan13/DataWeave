@@ -59,6 +59,7 @@ async def upload_files(
     target_files: list[UploadFile] = File(default=[]),
     user_id: str = Form(None)
 ):
+    
     try:
         if not user_id or not user_id.strip():
             return JSONResponse(
@@ -70,6 +71,10 @@ async def upload_files(
         user_dir = os.path.join(UPLOAD_BASE_DIR, user_id)
         source_dir = os.path.join(user_dir, "source")
         target_dir = os.path.join(user_dir, "target")
+
+        # if os.path.exists(user_dir):
+        #     import shutil
+        #     shutil.rmtree(user_dir)
         
         # Remove existing directories if they exist
         if os.path.exists(user_dir):

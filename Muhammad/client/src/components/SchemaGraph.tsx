@@ -19,209 +19,8 @@ import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
+import "@xyflow/react/dist/style.css";
 
-/* ---------- FULL HARDCODED SCHEMA (from bank1.json & bank2.json) ---------- */
-const sampleSchemas: any = {
-  Bank1: {
-    database: "Bank1",
-    tables: [
-      {
-        name: "Bank1_Mock_Customer",
-        primaryKey: "customerId",
-        foreignKeys: [],
-        columns: [
-          "phoneNumber","smsNumber","email","street","addressCity","country",
-          "legalId","legalDocumentName","legalIssueAuthorised","legalIssueCountry",
-          "legalIssueDate","legalExpiredDate","language","dateOfBirth",
-          "customerStatus","accountOfficerId","gender","state","postCode",
-          "contactDate","lastName","givenName","customerType","customerId"
-        ],
-      },
-      {
-        name: "Bank1_Mock_CurSav_Accounts",
-        primaryKey: "accountId",
-        foreignKeys: [
-          { column: "customerId", references: "Bank1_Mock_Customer.customerId" }
-        ],
-        columns: [
-          "accountId","displayName","customerId","customerRole","productId","status",
-          "currency","branch","accountOpeningDate","arrangementStartDate",
-          "availableBalance","onlineActualBalance","lockedAmount","availableLimit",
-          "productDescription","category"
-        ],
-      },
-      {
-        name: "Bank1_Mock_CurSav_Transactions",
-        primaryKey: "transactionReference",
-        foreignKeys: [
-          { column: "accountId", references: "Bank1_Mock_CurSav_Accounts.accountId" }
-        ],
-        columns: [
-          "transactionReference","activity","transactionAmount","currency",
-          "effectiveDate","transactionDate","bookingDate","narrative",
-          "externalEventStatus","userRole","branch","accountId",
-          "chargesPaymentTypeName","chargesPropertyName","chargesChargeAmount",
-          "taxRate","availableBalance","lockedAmount","approvedOverdraftLimit",
-          "accrualAmount","effectiveRate","availableOverdraftLimit","channel"
-        ],
-      },
-      {
-        name: "Bank1_Mock_FixedTerm_Accounts",
-        primaryKey: "accountId",
-        foreignKeys: [
-          { column: "customerId", references: "Bank1_Mock_Customer.customerId" },
-          { column: "agentCustomerId", references: "Bank1_Mock_Customer.customerId" }
-        ],
-        columns: [
-          "accountId","accountTitles","productId","currency","customerId",
-          "customerRole","branch","reason","maturityDate","arrangementEffectiveDate",
-          "expiryDate","agentCustomerId","expectedBalance","currentBalance",
-          "accruedInterest","jointCustomerName","category","interestRate",
-          "interestStatement","status"
-        ],
-      },
-      {
-        name: "Bank1_Mock_FixedTerm_Transactions",
-        primaryKey: "transactionReference",
-        foreignKeys: [
-          { column: "accountId", references: "Bank1_Mock_FixedTerm_Accounts.accountId" }
-        ],
-        columns: [
-          "transactionReference","activity","transactionAmount","currency",
-          "effectiveDate","transactionDate","reason","externalEventStatus","userRole",
-          "branch","chargesChargeAmount","interestAmount","taxRate","currentBalance",
-          "interestRate","channel","accountId"
-        ],
-      },
-      {
-        name: "Bank1_Mock_Loan_Accounts",
-        primaryKey: "accountId",
-        foreignKeys: [
-          { column: "customerId", references: "Bank1_Mock_Customer.customerId" },
-          { column: "agentCustomerIds", references: "Bank1_Mock_Customer.customerId" }
-        ],
-        columns: [
-          "accountId","accountName","productId","currency","customerId","customerRole",
-          "branch","reason","maturityDate","arrangementEffectiveDate","expiryDate",
-          "agentCustomerIds","loanBalance","availableBalance","loanInterestRate",
-          "loanInterestType","compoundType","effectiveRate","gracePeriod",
-          "periodicPayment","numberPayments","paymentFrequency","fixedDaysOfMonth",
-          "amortisationTerm","principalAmount","principalBalance","interestAmount",
-          "chargeAmount","interestBalance","interestFromArrearsBalance","accountType"
-        ],
-      },
-      {
-        name: "Bank1_Mock_Loan_Transactions",
-        primaryKey: "transactionReference",
-        foreignKeys: [
-          { column: "accountId", references: "Bank1_Mock_Loan_Accounts.accountId" }
-        ],
-        columns: [
-          "transactionReference","activity","transactionAmount","currency",
-          "effectiveDate","reason","externalEventStatus","userRole","branch",
-          "principalAmount","interestAmount","chargeAmount","balanceAmount",
-          "interestRate","channelName","accountId"
-        ],
-      },
-    ],
-  },
-
-  Bank2: {
-    database: "Bank2",
-    tables: [
-      {
-        name: "Bank2_Mock_Customer",
-        primaryKey: "encodedKey",
-        foreignKeys: [],
-        columns: [
-          "lastName","migrationEventKey","preferredLanguage","notes","gender",
-          "emailAddress","encodedKey","id","state","assignedUserKey","homePhone",
-          "creationDate","birthDate","firstName","mobilePhone","clientType"
-        ],
-      },
-      {
-        name: "Bank2_Mock_Addresses",
-        primaryKey: "encodedKey",
-        foreignKeys: [
-          { column: "parentKey", references: "Bank2_Mock_Customer.encodedKey" }
-        ],
-        columns: [
-          "city","country","encodedKey","line1","parentKey","postcode","region"
-        ],
-      },
-      {
-        name: "Bank2_Mock_Deposit_Accounts",
-        primaryKey: "encodedKey",
-        foreignKeys: [
-          { column: "accountHolderKey", references: "Bank2_Mock_Customer.encodedKey" }
-        ],
-        columns: [
-          "encodedKey","id","name","productTypeKey","currencyCode","accountHolderKey",
-          "accountHolderType","assignedBranchKey","notes","maturityDate","creationDate",
-          "closedDate","assignedUserKey","totalBalance","availableBalance",
-          "interestAccrued","ownershipHistory","accountType","interestRate",
-          "interestPaymentPoint","status","accountState","lockedBalance","overdraftAmount",
-          "productDescription"
-        ],
-      },
-      {
-        name: "Bank2_Mock_Deposit_Transactions",
-        primaryKey: "id",
-        foreignKeys: [
-          { column: "parentAccountKey", references: "Bank2_Mock_Deposit_Accounts.encodedKey" }
-        ],
-        columns: [
-          "id","encodedKey","type","amount","currencyCode","creationDate","valueDate",
-          "notes","externalId","userKey","branchKey","interestRate","transactionChannel",
-          "parentAccountKey","feesAmount","interestAmount","taxRate","totalBalance",
-          "bookingDate","feesPredefinedFee","feesName","availableBalance","lockedBalance",
-          "overdraftAmount","interestBalance","overdraftLimit"
-        ],
-      },
-      {
-        name: "Bank2_Mock_Identifications",
-        primaryKey: "encodedKey",
-        foreignKeys: [
-          { column: "clientKey", references: "Bank2_Mock_Customer.encodedKey" }
-        ],
-        columns: [
-          "clientKey","documentId","documentType","encodedKey","issuingAuthority",
-          "issuingCountry","issuingDate","validUntil"
-        ],
-      },
-      {
-        name: "Bank2_Mock_Loan_Accounts",
-        primaryKey: "id",
-        foreignKeys: [
-          { column: "accountHolderKey", references: "Bank2_Mock_Customer.encodedKey" }
-        ],
-        columns: [
-          "id","loanName","productTypeKey","currencyCode","accountHolderKey",
-          "accountHolderType","assignedBranchKey","notes","maturityDate","creationDate",
-          "closedDate","assignedUserKey","totalBalance","availableBalance","interestRate",
-          "interestType","interestApplicationMethod","effectiveInterestRate","gracePeriod",
-          "periodicPayment","repaymentInstallments","repaymentPeriodUnit","fixedDaysOfMonth",
-          "repaymentPeriodCount","amortizationPeriod","principalDue","principalBalance",
-          "interestDue","feesDue","interestBalance","interestFromArrearsBalance",
-          "interestAccrued","accountType"
-        ],
-      },
-      {
-        name: "Bank2_Mock_Loan_Transactions",
-        primaryKey: "id",
-        foreignKeys: [
-          { column: "parentAccountKey", references: "Bank2_Mock_Loan_Accounts.id" }
-        ],
-        columns: [
-          "encodedKey","id","type","amount","originalCurrencyCode","valueDate","notes",
-          "externalId","userKey","branchKey","principalAmount","interestAmount",
-          "feesAmount","totalBalance","principalBalance","interestRate",
-          "transactionChannel","parentAccountKey"
-        ],
-      },
-    ],
-  },
-};
 
 /* ---------- Node Component ---------- */
 function TableNode({ data }: any) {
@@ -367,52 +166,6 @@ export default function SchemaGraph({ selectedDataset }: Props) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-  // const generateNodesAndEdges = useCallback((schemaData: any) => {
-  //   const newNodes: Node[] = [];
-  //   const newEdges: Edge[] = [];
-  //   const cols = Math.ceil(Math.sqrt(schemaData.tables.length));
-  //   const spacing = 420;
-
-  //   schemaData.tables.forEach((table: any, index: number) => {
-  //     const row = Math.floor(index / cols);
-  //     const col = index % cols;
-
-  //     newNodes.push({
-  //       id: table.name,
-  //       type: "table",
-  //       position: { x: col * spacing + 150, y: row * spacing + 150 },
-  //       data: { table },
-  //     });
-    
-
-  //     table.foreignKeys.forEach((fk: any) => {
-  //       const [targetTable] = fk.references.split(".");
-  //       newEdges.push({
-  //         id: `${table.name}-${fk.column}-${targetTable}`,
-  //         source: table.name,
-  //         target: targetTable,
-  //         label: fk.column,
-  //         type: "smoothstep",
-  //         animated: true,
-  //         style: { stroke: "orange", strokeWidth: 2 },
-  //         markerEnd: { type: MarkerType.ArrowClosed, color: "orange" },
-  //         labelStyle: { fill: "#111", fontSize: 11, fontWeight: 600 },
-  //         labelBgStyle: {
-  //           fill: "#fff",
-  //           fillOpacity: 1,
-  //           stroke: "orange",
-  //           strokeWidth: 0.5,
-  //         },
-  //         labelBgPadding: [4, 2],
-  //         labelBgBorderRadius: 4,
-  //       });
-  //     });
-  //   });
-
-  //   setNodes(newNodes);
-  //   setEdges(newEdges);
-  // }, []);
-
   const generateNodesAndEdges = useCallback((schemaData: any) => {
     if (!schemaData || !schemaData.tables) return;   //  prevent runtime crash
     const newNodes: Node[] = [];
@@ -466,48 +219,79 @@ export default function SchemaGraph({ selectedDataset }: Props) {
     setEdges(newEdges);
   }, []);
   
-  // useEffect(() => {
-  //   generateNodesAndEdges(sampleSchemas[selectedDataset]);
-  // }, [selectedDataset, generateNodesAndEdges]);
+//   useEffect(() => {
+//     const stored = localStorage.getItem("schemaAnalysis");
+//     if (stored) {
+//       try {
+//         const parsed = JSON.parse(stored);
+//         const db =
+//   selectedDataset === (parsed.source?.database || parsed.source?.Database)
+//     ? parsed.source
+//     : parsed.target;
 
-   /* 🧠 PLACE THIS useEffect HERE (replaces the old one) */
-   useEffect(() => {
-    const stored = localStorage.getItem("schemaAnalysis");
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        const schemaData =
-          selectedDataset === parsed.source.database
-            ? parsed.source
-            : parsed.target;
+// if (db && db.tables) {
+//   const schemaData = {
+//     tables: db.tables.map((table: any) => ({
+//       name: table.name,
+//       primaryKey: table.primaryKey || "",
+//       foreignKeys: table.foreignKeys || [],
+//       columns: Array.isArray(table.columns)
+//         ? table.columns
+//         : Object.keys(table.columns || {}),
+//     })),
+//   };
 
-        if (schemaData && schemaData.tables) {
-          generateNodesAndEdges(schemaData);
-        }
-      } catch (err) {
-        console.error("Failed to parse schemaAnalysis:", err);
-      }
-    }
-  }, [selectedDataset, generateNodesAndEdges]);
+//   generateNodesAndEdges(schemaData);
+// }
 
+//       } catch (err) {
+//         console.error("Failed to parse schemaAnalysis:", err);
+//       }
+//     }
+//   }, [selectedDataset, generateNodesAndEdges]);
   
+useEffect(() => {
+  const stored = localStorage.getItem("schemaAnalysis");
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      const db =
+        selectedDataset === (parsed.source?.database || parsed.source?.Database)
+          ? parsed.source
+          : parsed.target;
+
+      if (db && db.tables) {
+        generateNodesAndEdges(db);
+      }
+    } catch (err) {
+      console.error("Failed to parse schemaAnalysis:", err);
+    }
+  }
+}, [selectedDataset, generateNodesAndEdges]);
+
   return (
     <Box sx={{ width: "100%", height: "100%" }}>
       <ReactFlow nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} fitView nodeTypes={nodeTypes}>
         <Background color="#555" gap={16} size={1} />
-        <Controls />
+        <Controls
+  showInteractive={false}
+  className="custom-controls"
+/>
+
         <MiniMap nodeColor={() => "#1e88e5"} maskColor="rgba(0,0,0,0.7)" style={{ borderRadius: 8 }} />
       </ReactFlow>
       <Paper
         elevation={2}
         sx={{
           position: "absolute",
-          bottom: 16,
-          left: 16,
+          bottom: 0, 
+          left: 20,
           px: 2,
           py: 1,
           bgcolor: "background.paper",
+          color: "text.primary",
           fontSize: 12,
+          borderRadius: 1.5,
         }}
       >
         Viewing dataset: <b>{selectedDataset}</b>

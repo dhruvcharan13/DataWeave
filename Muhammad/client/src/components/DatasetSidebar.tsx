@@ -17,161 +17,13 @@ import {
   TableChartOutlined,
 } from "@mui/icons-material";
 
-/* ---------- Full hardcoded schema for Bank1 & Bank2 ---------- */
-const sampleSchemas = {
-  Bank1: {
-    tables: [
-      {
-        name: "Bank1_Mock_Customer",
-        columns: [
-          "phoneNumber", "smsNumber", "email", "street", "addressCity", "country",
-          "legalId", "legalDocumentName", "legalIssueAuthorised", "legalIssueCountry",
-          "legalIssueDate", "legalExpiredDate", "language", "dateOfBirth",
-          "customerStatus", "accountOfficerId", "gender", "state", "postCode",
-          "contactDate", "lastName", "givenName", "customerType", "customerId"
-        ],
-      },
-      {
-        name: "Bank1_Mock_CurSav_Accounts",
-        columns: [
-          "accountId", "displayName", "customerId", "customerRole", "productId", "status",
-          "currency", "branch", "accountOpeningDate", "arrangementStartDate",
-          "availableBalance", "onlineActualBalance", "lockedAmount", "availableLimit",
-          "productDescription", "category"
-        ],
-      },
-      {
-        name: "Bank1_Mock_CurSav_Transactions",
-        columns: [
-          "transactionReference", "activity", "transactionAmount", "currency",
-          "effectiveDate", "transactionDate", "bookingDate", "narrative",
-          "externalEventStatus", "userRole", "branch", "accountId",
-          "chargesPaymentTypeName", "chargesPropertyName", "chargesChargeAmount",
-          "taxRate", "availableBalance", "lockedAmount", "approvedOverdraftLimit",
-          "accrualAmount", "effectiveRate", "availableOverdraftLimit", "channel"
-        ],
-      },
-      {
-        name: "Bank1_Mock_FixedTerm_Accounts",
-        columns: [
-          "accountId", "accountTitles", "productId", "currency", "customerId",
-          "customerRole", "branch", "reason", "maturityDate",
-          "arrangementEffectiveDate", "expiryDate", "agentCustomerId",
-          "expectedBalance", "currentBalance", "accruedInterest", "jointCustomerName",
-          "category", "interestRate", "interestStatement", "status"
-        ],
-      },
-      {
-        name: "Bank1_Mock_FixedTerm_Transactions",
-        columns: [
-          "transactionReference", "activity", "transactionAmount", "currency",
-          "effectiveDate", "transactionDate", "reason", "externalEventStatus",
-          "userRole", "branch", "chargesChargeAmount", "interestAmount", "taxRate",
-          "currentBalance", "interestRate", "channel", "accountId"
-        ],
-      },
-      {
-        name: "Bank1_Mock_Loan_Accounts",
-        columns: [
-          "accountId", "accountName", "productId", "currency", "customerId",
-          "customerRole", "branch", "reason", "maturityDate",
-          "arrangementEffectiveDate", "expiryDate", "agentCustomerIds",
-          "loanBalance", "availableBalance", "loanInterestRate", "loanInterestType",
-          "compoundType", "effectiveRate", "gracePeriod", "periodicPayment",
-          "numberPayments", "paymentFrequency", "fixedDaysOfMonth", "amortisationTerm",
-          "principalAmount", "principalBalance", "interestAmount", "chargeAmount",
-          "interestBalance", "interestFromArrearsBalance", "accountType"
-        ],
-      },
-      {
-        name: "Bank1_Mock_Loan_Transactions",
-        columns: [
-          "transactionReference", "activity", "transactionAmount", "currency",
-          "effectiveDate", "reason", "externalEventStatus", "userRole", "branch",
-          "principalAmount", "interestAmount", "chargeAmount", "balanceAmount",
-          "interestRate", "channelName", "accountId"
-        ],
-      },
-    ],
-  },
 
-  Bank2: {
-    tables: [
-      {
-        name: "Bank2_Mock_Customer",
-        columns: [
-          "lastName", "migrationEventKey", "preferredLanguage", "notes",
-          "gender", "emailAddress", "encodedKey", "id", "state",
-          "assignedUserKey", "homePhone", "creationDate", "birthDate",
-          "firstName", "mobilePhone", "clientType"
-        ],
-      },
-      {
-        name: "Bank2_Mock_Addresses",
-        columns: [
-          "city", "country", "encodedKey", "line1", "parentKey", "postcode", "region"
-        ],
-      },
-      {
-        name: "Bank2_Mock_Deposit_Accounts",
-        columns: [
-          "encodedKey", "id", "name", "productTypeKey", "currencyCode", "accountHolderKey",
-          "accountHolderType", "assignedBranchKey", "notes", "maturityDate",
-          "creationDate", "closedDate", "assignedUserKey", "totalBalance",
-          "availableBalance", "interestAccrued", "ownershipHistory", "accountType",
-          "interestRate", "interestPaymentPoint", "status", "accountState",
-          "lockedBalance", "overdraftAmount", "productDescription"
-        ],
-      },
-      {
-        name: "Bank2_Mock_Deposit_Transactions",
-        columns: [
-          "id", "encodedKey", "type", "amount", "currencyCode", "creationDate",
-          "valueDate", "notes", "externalId", "userKey", "branchKey", "interestRate",
-          "transactionChannel", "parentAccountKey", "feesAmount", "interestAmount",
-          "taxRate", "totalBalance", "bookingDate", "feesPredefinedFee", "feesName",
-          "availableBalance", "lockedBalance", "overdraftAmount", "interestBalance",
-          "overdraftLimit"
-        ],
-      },
-      {
-        name: "Bank2_Mock_Identifications",
-        columns: [
-          "clientKey", "documentId", "documentType", "encodedKey", "issuingAuthority",
-          "issuingCountry", "issuingDate", "validUntil"
-        ],
-      },
-      {
-        name: "Bank2_Mock_Loan_Accounts",
-        columns: [
-          "id", "loanName", "productTypeKey", "currencyCode", "accountHolderKey",
-          "accountHolderType", "assignedBranchKey", "notes", "maturityDate",
-          "creationDate", "closedDate", "assignedUserKey", "totalBalance",
-          "availableBalance", "interestRate", "interestType", "interestApplicationMethod",
-          "effectiveInterestRate", "gracePeriod", "periodicPayment",
-          "repaymentInstallments", "repaymentPeriodUnit", "fixedDaysOfMonth",
-          "repaymentPeriodCount", "amortizationPeriod", "principalDue",
-          "principalBalance", "interestDue", "feesDue", "interestBalance",
-          "interestFromArrearsBalance", "interestAccrued", "accountType"
-        ],
-      },
-      {
-        name: "Bank2_Mock_Loan_Transactions",
-        columns: [
-          "encodedKey", "id", "type", "amount", "originalCurrencyCode", "valueDate",
-          "notes", "externalId", "userKey", "branchKey", "principalAmount",
-          "interestAmount", "feesAmount", "totalBalance", "principalBalance",
-          "interestRate", "transactionChannel", "parentAccountKey"
-        ],
-      },
-    ],
-  },
-};
 
 interface SidebarProps {
   selected: string;
   onSelect: (dataset: string) => void;
 }
+
 
 export default function DatasetSidebar({ selected, onSelect }: SidebarProps) {
   const [expandedBanks, setExpandedBanks] = useState<{ [key: string]: boolean }>({});
@@ -201,6 +53,7 @@ export default function DatasetSidebar({ selected, onSelect }: SidebarProps) {
     if (newWidth > 220 && newWidth < 600) setSidebarWidth(newWidth);
   };
 
+  
   useEffect(() => {
     window.addEventListener("mousemove", resize);
     window.addEventListener("mouseup", stopResize);
@@ -212,48 +65,61 @@ export default function DatasetSidebar({ selected, onSelect }: SidebarProps) {
 
   useEffect(() => {
     const stored = localStorage.getItem("schemaAnalysis");
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
+    if (!stored) return;
   
-        const formatted: any = {};
-        [parsed.source, parsed.target].forEach((db: any) => {
-          if (!db?.database || !db?.tables) return;
+    try {
+      const parsed = JSON.parse(stored);
+      const formatted: any = {};
   
-          formatted[db.database] = {
-            tables: db.tables.map((table: any) => ({
-              name: table.name,
-              columns: Array.isArray(table.columns)
-                ? table.columns
-                : Object.keys(table.columns || {}),
-            })),
-          };
-        });
+      ["source", "target"].forEach((key) => {
+        const db = parsed[key];
+        if (!db || !db.tables) return;
   
-        setSchemas(formatted);
-      } catch (err) {
-        console.error("Failed to parse schemaAnalysis:", err);
-      }
+     //  Always use simple readable names
+let dbName = key === "target" ? "Target" : "Source";
+
+        formatted[dbName] = {
+          tables: db.tables.map((table: any) => ({
+            name: table.name,
+            columns: Array.isArray(table.columns)
+              ? table.columns
+              : Object.keys(table.columns || {}),
+          })),
+        };
+      });
+  
+      console.log("✅ Loaded schemas:", formatted);
+      setSchemas(formatted);
+    } catch (err) {
+      console.error("Failed to parse schemaAnalysis:", err);
     }
   }, []);
   
+  
+  console.log("📂 All schemas:", Object.keys(schemas));
+
 
   return (
     <Drawer
-      variant="permanent"
-      sx={{
-        width: sidebarWidth,
-        flexShrink: 0,
-        "& .MuiDrawer-paper": {
-          width: sidebarWidth,
-          boxSizing: "border-box",
-          bgcolor: "background.paper",
-          borderRight: "1px solid",
-          borderColor: "divider",
-          position: "absolute",
-        },
-      }}
-    >
+  variant="permanent"
+  anchor="left"
+  sx={{
+    width: sidebarWidth,
+    flexShrink: 0,
+    "& .MuiDrawer-paper": {
+      width: sidebarWidth,
+      boxSizing: "border-box",
+      bgcolor: "background.paper",
+      borderRight: "1px solid",
+      borderColor: "divider",
+      position: "fixed",   // ✅ key fix: stick to viewport edge
+      left: 0,             // ✅ force it to the very edge
+      top: 72,
+      height: "90%",     // ✅ ensure full height
+    },
+  }}
+>
+
       <Box sx={{ p: 2 }}>
         <Box display="flex" alignItems="center" gap={1} mb={2}>
           <Storage color="primary" />

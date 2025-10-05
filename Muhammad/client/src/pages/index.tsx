@@ -186,70 +186,110 @@ export default function Home() {
         variant="contained"
         fullWidth
         sx={{ mt: 2 }}
+        // onClick={async () => {
+        //   try {
+        //     setUploadError(null);
+        //     setIsUploading(true);
+            
+        //     // Upload source and target files
+        //     const response = await uploadFiles(
+        //       sourceDb.map(f => f.file),
+        //       targetDb.map(f => f.file)
+        //     );
+            
+        //     console.log('Upload response:', response);
+            
+        //     // Handle schema analysis response
+        //     if (response.schema_analysis) {
+        //       const { source, target } = response.schema_analysis;
+              
+        //       // Store the schema analysis in localStorage for the next page
+        //       localStorage.setItem('schemaAnalysis', JSON.stringify({
+        //         source: {
+        //           database: source?.database || 'source',
+        //           tables: source?.tables || []
+        //         },
+        //         target: {
+        //           database: target?.database || 'target',
+        //           tables: target?.tables || []
+        //         }
+        //       }));
+              
+        //       // Navigate to confirmation page with schema data
+        //       router.push({
+        //         pathname: '/confirm',
+        //         query: { 
+        //           sourceDb: source?.database || 'source',
+        //           targetDb: target?.database || 'target'
+        //         }
+        //       });
+        //     } else {
+        //       // Fallback for older response format
+        //       console.warn('Unexpected response format. Falling back to legacy handling.');
+              
+        //       // Store user ID for future requests if available
+        //       if (response.user_id) {
+        //         localStorage.setItem('userId', response.user_id);
+        //       }
+              
+        //       // Navigate to confirmation page with minimal data
+        //       // router.push({
+        //       //   pathname: '/confirm',
+        //       //   query: { 
+        //       //     sourceDb: 'source',
+        //       //     targetDb: 'target'
+        //       //   }
+        //       // });
+        //       router.push('/schema-visualizer');             
+        //     }
+            
+        //   } catch (error) {
+        //     console.error('Upload failed:', error);
+        //     setUploadError(error instanceof Error ? error.message : 'Failed to upload files. Please try again.');
+        //   } finally {
+        //     setIsUploading(false);
+        //   }
+        // }}
         onClick={async () => {
           try {
             setUploadError(null);
             setIsUploading(true);
-            
+        
             // Upload source and target files
             const response = await uploadFiles(
-              sourceDb.map(f => f.file),
-              targetDb.map(f => f.file)
+              sourceDb.map((f) => f.file),
+              targetDb.map((f) => f.file)
             );
-            
-            console.log('Upload response:', response);
-            
-            // Handle schema analysis response
+        
+            console.log("Upload response:", response);
+        
+            // ✅ Handle new schema analysis format from backend
             if (response.schema_analysis) {
               const { source, target } = response.schema_analysis;
-              
-              // Store the schema analysis in localStorage for the next page
-              localStorage.setItem('schemaAnalysis', JSON.stringify({
-                source: {
-                  database: source?.database || 'source',
-                  tables: source?.tables || []
-                },
-                target: {
-                  database: target?.database || 'target',
-                  tables: target?.tables || []
-                }
-              }));
-              
-              // Navigate to confirmation page with schema data
-              router.push({
-                pathname: '/confirm',
-                query: { 
-                  sourceDb: source?.database || 'source',
-                  targetDb: target?.database || 'target'
-                }
-              });
+        
+              // Save entire backend structure directly — no need to rebuild manually
+              localStorage.setItem(
+                "schemaAnalysis",
+                JSON.stringify({ source, target })
+              );
+        
+              // Go to the visualizer
+              router.push("/schema-visualizer");
             } else {
-              // Fallback for older response format
-              console.warn('Unexpected response format. Falling back to legacy handling.');
-              
-              // Store user ID for future requests if available
-              if (response.user_id) {
-                localStorage.setItem('userId', response.user_id);
-              }
-              
-              // Navigate to confirmation page with minimal data
-              // router.push({
-              //   pathname: '/confirm',
-              //   query: { 
-              //     sourceDb: 'source',
-              //     targetDb: 'target'
-              //   }
-              // });
-              router.push('/schema-visualizer');             
+              console.warn("Unexpected response format — no schema_analysis found");
+              setUploadError("No schema analysis returned from backend.");
             }
-            
           } catch (error) {
-            console.error('Upload failed:', error);
-            setUploadError(error instanceof Error ? error.message : 'Failed to upload files. Please try again.');
+            console.error("Upload failed:", error);
+            setUploadError(
+              error instanceof Error
+                ? error.message
+                : "Failed to upload files. Please try again."
+            );
           } finally {
             setIsUploading(false);
           }
-        }}
+        }}        
         disabled={isConfirmDisabled}
         color="success"
         startIcon={isUploading ? <CircularProgress size={20} color="inherit" /> : null}
