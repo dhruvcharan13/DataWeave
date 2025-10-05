@@ -18,7 +18,6 @@ import {
 } from "@mui/icons-material";
 
 
-
 interface SidebarProps {
   selected: string;
   onSelect: (dataset: string) => void;
@@ -197,20 +196,45 @@ let dbName = key === "target" ? "Target" : "Source";
             </React.Fragment>
           ))}
         </List>
-      </Box>
 
-      <Box
-        onMouseDown={startResize}
-        sx={{
-          position: "absolute",
-          top: 0,
-          right: 0,
-          width: "5px",
-          height: "100%",
-          cursor: "col-resize",
-          "&:hover": { bgcolor: "action.hover" },
-        }}
-      />
-    </Drawer>
+{/* Proceed button now scrolls naturally with content */}
+<Box sx={{ mt: 2, textAlign: "center" }}>
+  <Box
+    component="button"
+    onClick={() => window.location.href = "/mapping"}
+    style={{
+      width: "100%",
+      padding: "10px 0",
+      background: "#1976d2",
+      border: "none",
+      borderRadius: "8px",
+      color: "white",
+      fontWeight: 600,
+      fontSize: "0.9rem",
+      cursor: "pointer",
+    }}
+    onMouseOver={(e) => (e.currentTarget.style.background = "#1565c0")}
+    onMouseOut={(e) => (e.currentTarget.style.background = "#1976d2")}
+  >
+    Proceed to Mapping →
+  </Box>
+</Box>
+</Box>
+
+{/* ✅ Draggable resize bar */}
+<Box
+onMouseDown={startResize}
+sx={{
+  position: "absolute",
+  top: 0,
+  right: 0,
+  width: "5px",
+  height: "100%",
+  cursor: "col-resize",
+  "&:hover": { bgcolor: "action.hover" },
+}}
+/>
+</Drawer>
+
   );
 }

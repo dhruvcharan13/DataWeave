@@ -9,14 +9,7 @@ export default function SchemaVisualizer() {
   //const [selectedDataset, setSelectedDataset] = useState("Source");
   const [selectedDataset, setSelectedDataset] = useState<string>("");
 
-  // useEffect(() => {
-  //   const stored = localStorage.getItem("schemaAnalysis");
-  //   if (stored) {
-  //     const parsed = JSON.parse(stored);
-  //     const firstKey = parsed.source?.database || "Source";
-  //     setSelectedDataset(firstKey);
-  //   }
-  // }, []);
+  
   useEffect(() => {
     const stored = localStorage.getItem("schemaAnalysis");
     if (stored) {
@@ -27,7 +20,6 @@ export default function SchemaVisualizer() {
     }
   }, []);
   
-  console.log("🎯 Selected dataset:", selectedDataset);
 
   return (
     <>
@@ -41,22 +33,7 @@ export default function SchemaVisualizer() {
     bgcolor: "background.default",
   }}
 >
-  {/* Sidebar */}
-  {/* <Box
-    sx={{
-      flexShrink: 0,
-      bgcolor: "background.paper",
-      borderRight: "1px solid",
-      borderColor: "divider",
-      height: "100%",
-      zIndex: 2,
-    }}
-  >
-    <DatasetSidebar
-      selected={selectedDataset}
-      onSelect={setSelectedDataset}
-    />
-  </Box> */}
+
   {/* Sidebar */}
   <DatasetSidebar
     selected={selectedDataset}
