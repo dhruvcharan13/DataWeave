@@ -87,7 +87,15 @@ const SuggestedMapping = () => {
   return (
     <Box sx={{ margin: "1rem" }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h4" gutterBottom>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{
+            fontFamily:
+              '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, "Noto Sans", sans-serif',
+            fontWeight: 800,
+          }}
+        >
           Suggested Mapping
         </Typography>
         <Button variant="contained" onClick={handleMap} disabled={isMerging}>
