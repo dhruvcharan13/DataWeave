@@ -1,3 +1,4 @@
+from schema_json import extract_schema_from_dir
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
@@ -125,8 +126,8 @@ async def upload_files(
         
         # Process directories to get schema info
         try:
-            source_info = process_directory(source_dir)
-            target_info = process_directory(target_dir)
+            source_info = extract_schema_from_dir(source_dir)
+            target_info = extract_schema_from_dir(target_dir)
             
             schema_prompt = """
             Analyze the following database schemas and identify:
