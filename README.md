@@ -1,16 +1,16 @@
-##DataWeave
+**DataWeave**
 
 AI-Assisted Data Integration Platform
 Seamlessly merge, clean, and validate complex datasets — with transparency, control, and intelligence.
 
-##Inspiration
+**Inspiration**
 
 DataWeave was born out of a frustration that every data engineer, analyst, or consultant has faced — dealing with messy, inconsistent, and disconnected data sources.
 
 While companies invest heavily in ETL tools and warehouses, the human-in-the-loop experience — where analysts can see, understand, and guide AI-driven transformations — is often missing.
 We wanted to build something that feels as intuitive as Notion or PowerApps, powered by Gemini + OpenAI intelligence, with Supabase and cloud storage flexibility.
 
-##What It Does
+**What It Does**
 
 DataWeave is an AI-assisted data integration platform that helps organizations merge, clean, and validate messy datasets — without losing control or transparency.
 
