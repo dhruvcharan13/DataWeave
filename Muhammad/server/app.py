@@ -142,7 +142,7 @@ async def upload_files(
                         "name": "<table_name>",
                         "primaryKey": "<column>",
                         "foreignKeys": [{"column": "<col>", "references": "<table.column>"}],
-                        "columns": ["col1", "col2"]
+                        "columns": ["col1": "column_def_from schema", "col2": "column_def_from schema"]
                     }]
                 },
                 "target": { ... }

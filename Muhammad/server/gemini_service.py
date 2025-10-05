@@ -16,7 +16,7 @@ def get_client() -> genai.Client:
         _client =  genai.Client()  # Uses GEMINI_API_KEY from environment
     return _client
 
-async def generate_text(prompt: str, model: str = "gemini-2.5-flash") -> str:
+async def generate_text(prompt: str, model: str = "gemini-2.5-flash-lite") -> str:
     """Generate text using the Gemini model."""
     client = get_client()
     response = client.models.generate_content(
