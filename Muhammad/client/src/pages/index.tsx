@@ -21,7 +21,7 @@ export default function Home() {
   return (
     <Container maxWidth="lg" sx={{ my: 2 }}>
       <Box sx={{ textAlign: "center", mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+        <Typography variant="h2" component="h1" gutterBottom sx={{ fontWeight: 800 }}>
           Database Merger
         </Typography>
         <Typography
@@ -40,7 +40,6 @@ export default function Home() {
           maxWidth="md"
           mx="auto"
         >
-          You can change the Target Database later as well
         </Typography>
       </Box>
 

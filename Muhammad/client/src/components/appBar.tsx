@@ -6,12 +6,10 @@ import {
   IconButton,
   Typography,
   Menu,
-  Avatar,
   Button,
   Tooltip,
   MenuItem,
 } from "@mui/material";
-import AdbIcon from "@mui/icons-material/Adb";
 import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "../store/appState";
 import { uiActions, ThemeMode } from "../ui/slice";
@@ -64,20 +62,23 @@ function ResponsiveAppBar() {
 
   return (
     <AppBarWrapper position="static">
-      <Toolbar disableGutters>
-        <AdbIcon
-          className="adb-icon"
-          sx={{ display: { xs: "none", md: "flex" } }}
-        />
+      <Toolbar disableGutters sx={{ pl: 2 }}>
         <Typography
           variant="h6"
           noWrap
           component="a"
           onClick={() => onClickRoute("/")}
-          sx={{ display: { xs: "none", md: "flex" } }}
-          className="logo-typography"
+          sx={{
+            display: { xs: "none", md: "flex" },
+            fontWeight: 800,
+            letterSpacing: ".05rem",
+            fontFamily:
+              '"Inter Tight", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, "Noto Sans", sans-serif',
+            mr: 2,
+            cursor: "pointer",
+          }}
         >
-          LOGO
+          DataWeave
         </Typography>
 
         <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
@@ -114,9 +115,8 @@ function ResponsiveAppBar() {
             ))}
           </Menu>
         </Box>
-        <AdbIcon sx={{ display: { xs: "flex", md: "none" }, mr: 1 }} />
         <Typography
-          variant="h5"
+          variant="h6"
           noWrap
           component="a"
           onClick={() => onClickRoute("/")}
@@ -124,14 +124,16 @@ function ResponsiveAppBar() {
             mr: 2,
             display: { xs: "flex", md: "none" },
             flexGrow: 1,
-            fontFamily: "monospace",
-            fontWeight: 700,
-            letterSpacing: ".3rem",
+            fontWeight: 800,
+            letterSpacing: ".05rem",
+            fontFamily:
+              '"Inter Tight", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, "Noto Sans", sans-serif',
             color: "inherit",
             textDecoration: "none",
+            cursor: "pointer",
           }}
         >
-          LOGO
+          DataWeave
         </Typography>
         <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
           {pages.map((page) => (
@@ -200,16 +202,7 @@ function ResponsiveAppBar() {
 export default ResponsiveAppBar;
 
 const AppBarWrapper = styled(AppBar)`
-  .adb-icon {
-    margin: 0 16px;
-  }
-
-  .logo-typography {
-    font-family: monospace;
-    font-weight: 700;
-    letter-spacing: 0.3rem;
-    color: inherit;
-    text-decoration: none;
-    margin-right: 2rem;
-  }
+  background-color: #000 !important;
+  color: #fff;
+  box-shadow: none;
 `;

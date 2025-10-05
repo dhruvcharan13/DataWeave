@@ -19,6 +19,8 @@ import re
 import json
 
 from prompts import generate_relationship_prompt, generate_mapping_prompt
+from starlette.concurrency import run_in_threadpool
+from newscript import BankDataMerger
 # Add the server directory to the Python path
 sys.path.append(str(Path(__file__).parent))
 
@@ -193,3 +195,51 @@ async def generate_suggested_mapping(schema_analysis: dict):
         
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+
+# New endpoint to run the merge process and save outputs under DataWeave/output
+@app.post("/api/run-merge")
+async def run_merge(mapping_path: str | None = None):
+    try:
+        # Determine repository root: .../DataWeave
+        repo_root = Path(__file__).resolve().parents[2]
+
+        # Default directories
+        bank1_dir = str(repo_root / "Bank 1 Data")
+        bank2_dir = str(repo_root / "Bank 2 Data")
+        output_dir = str(repo_root / "output")
+
+        os.makedirs(output_dir, exist_ok=True)
+
+        # Determine mapping file path
+        candidate_paths = []
+        if mapping_path:
+            candidate_paths.append(Path(mapping_path))
+        # Workspace root mapping_output.json (commonly used during development)
+        candidate_paths.append(Path("/Users/dhruvcharan/Downloads/Archive/mapping_output.json"))
+        # Server-local mapping.json fallback
+        candidate_paths.append(Path(__file__).parent / "mapping.json")
+
+        mapping_file = None
+        for p in candidate_paths:
+            if p and p.exists():
+                mapping_file = str(p)
+                break
+
+        if not mapping_file:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"error": "No mapping file found. Provide mapping_path or place mapping.json next to server."}
+            )
+
+        merger = BankDataMerger(mapping_file, bank1_dir, bank2_dir, output_dir)
+        await run_in_threadpool(merger.run_merge)
+
+        # List generated files
+        files = sorted(os.listdir(output_dir)) if os.path.isdir(output_dir) else []
+        return {"output_dir": output_dir, "files": files}
+
+    except Exception as e:
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"error": f"Merge failed: {str(e)}"}
+        )

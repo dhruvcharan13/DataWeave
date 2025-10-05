@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, CircularProgress, Alert } from "@mui/material";
+import { Box, Typography, CircularProgress, Alert, Button } from "@mui/material";
 import MappingGrid from "../components/MappingGrid";
 
 interface Mapping {
@@ -16,6 +16,7 @@ const SuggestedMapping = () => {
   const [mappings, setMappings] = useState<Mapping[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isMerging, setIsMerging] = useState(false);
 
   useEffect(() => {
     try {
@@ -63,11 +64,36 @@ const SuggestedMapping = () => {
     );
   }
 
+  const handleMap = async () => {
+    try {
+      setIsMerging(true);
+      const res = await fetch("http://localhost:8000/api/run-merge", {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error || `Merge failed with status ${res.status}`);
+      }
+      // eslint-disable-next-line no-alert
+      alert("Dataset merged and downloaded");
+    } catch (e: any) {
+      // eslint-disable-next-line no-alert
+      alert(e?.message || "Failed to run merge");
+    } finally {
+      setIsMerging(false);
+    }
+  };
+
   return (
     <Box sx={{ margin: "1rem" }}>
-      <Typography variant="h4" gutterBottom>
-        Suggested Mapping
-      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h4" gutterBottom>
+          Suggested Mapping
+        </Typography>
+        <Button variant="contained" onClick={handleMap} disabled={isMerging}>
+          {isMerging ? "Mapping..." : "Map"}
+        </Button>
+      </Box>
       <MappingGrid data={mappings} />
     </Box>
   );
