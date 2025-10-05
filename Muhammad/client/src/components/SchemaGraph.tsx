@@ -367,23 +367,77 @@ export default function SchemaGraph({ selectedDataset }: Props) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
+  // const generateNodesAndEdges = useCallback((schemaData: any) => {
+  //   const newNodes: Node[] = [];
+  //   const newEdges: Edge[] = [];
+  //   const cols = Math.ceil(Math.sqrt(schemaData.tables.length));
+  //   const spacing = 420;
+
+  //   schemaData.tables.forEach((table: any, index: number) => {
+  //     const row = Math.floor(index / cols);
+  //     const col = index % cols;
+
+  //     newNodes.push({
+  //       id: table.name,
+  //       type: "table",
+  //       position: { x: col * spacing + 150, y: row * spacing + 150 },
+  //       data: { table },
+  //     });
+    
+
+  //     table.foreignKeys.forEach((fk: any) => {
+  //       const [targetTable] = fk.references.split(".");
+  //       newEdges.push({
+  //         id: `${table.name}-${fk.column}-${targetTable}`,
+  //         source: table.name,
+  //         target: targetTable,
+  //         label: fk.column,
+  //         type: "smoothstep",
+  //         animated: true,
+  //         style: { stroke: "orange", strokeWidth: 2 },
+  //         markerEnd: { type: MarkerType.ArrowClosed, color: "orange" },
+  //         labelStyle: { fill: "#111", fontSize: 11, fontWeight: 600 },
+  //         labelBgStyle: {
+  //           fill: "#fff",
+  //           fillOpacity: 1,
+  //           stroke: "orange",
+  //           strokeWidth: 0.5,
+  //         },
+  //         labelBgPadding: [4, 2],
+  //         labelBgBorderRadius: 4,
+  //       });
+  //     });
+  //   });
+
+  //   setNodes(newNodes);
+  //   setEdges(newEdges);
+  // }, []);
+
   const generateNodesAndEdges = useCallback((schemaData: any) => {
+    if (!schemaData || !schemaData.tables) return;   //  prevent runtime crash
     const newNodes: Node[] = [];
     const newEdges: Edge[] = [];
     const cols = Math.ceil(Math.sqrt(schemaData.tables.length));
     const spacing = 420;
-
+  
     schemaData.tables.forEach((table: any, index: number) => {
       const row = Math.floor(index / cols);
       const col = index % cols;
-
+  
+      //  Normalize columns to handle both array and object structures
+      const normalizedColumns = Array.isArray(table.columns)
+        ? table.columns
+        : Object.keys(table.columns || {});
+  
+      //  Add table node
       newNodes.push({
         id: table.name,
         type: "table",
         position: { x: col * spacing + 150, y: row * spacing + 150 },
-        data: { table },
+        data: { table: { ...table, columns: normalizedColumns } },
       });
-
+  
+      //  Add edges for each foreign key
       table.foreignKeys.forEach((fk: any) => {
         const [targetTable] = fk.references.split(".");
         newEdges.push({
@@ -407,15 +461,36 @@ export default function SchemaGraph({ selectedDataset }: Props) {
         });
       });
     });
-
+  
     setNodes(newNodes);
     setEdges(newEdges);
   }, []);
+  
+  // useEffect(() => {
+  //   generateNodesAndEdges(sampleSchemas[selectedDataset]);
+  // }, [selectedDataset, generateNodesAndEdges]);
 
-  useEffect(() => {
-    generateNodesAndEdges(sampleSchemas[selectedDataset]);
+   /* 🧠 PLACE THIS useEffect HERE (replaces the old one) */
+   useEffect(() => {
+    const stored = localStorage.getItem("schemaAnalysis");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        const schemaData =
+          selectedDataset === parsed.source.database
+            ? parsed.source
+            : parsed.target;
+
+        if (schemaData && schemaData.tables) {
+          generateNodesAndEdges(schemaData);
+        }
+      } catch (err) {
+        console.error("Failed to parse schemaAnalysis:", err);
+      }
+    }
   }, [selectedDataset, generateNodesAndEdges]);
 
+  
   return (
     <Box sx={{ width: "100%", height: "100%" }}>
       <ReactFlow nodes={nodes} edges={edges} onNodesChange={onNodesChange} onEdgesChange={onEdgesChange} fitView nodeTypes={nodeTypes}>

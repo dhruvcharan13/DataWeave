@@ -4,7 +4,7 @@ import DatasetSidebar from "../components/DatasetSidebar";
 import SchemaGraph from "../components/SchemaGraph";
 import { useState } from "react";
 
-export default function Page2() {
+export default function SchemaVisualizer() {
   const [selectedDataset, setSelectedDataset] = useState("Bank1");
 
   return (

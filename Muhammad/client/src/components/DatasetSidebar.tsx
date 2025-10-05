@@ -178,6 +178,7 @@ export default function DatasetSidebar({ selected, onSelect }: SidebarProps) {
   const [expandedTables, setExpandedTables] = useState<{ [key: string]: boolean }>({});
   const [sidebarWidth, setSidebarWidth] = useState(280);
   const [isResizing, setIsResizing] = useState(false);
+  const [schemas, setSchemas] = useState<any>({});
 
   const toggleBankExpand = (bank: string) => {
     setExpandedBanks((prev) => ({ ...prev, [bank]: !prev[bank] }));
@@ -209,6 +210,34 @@ export default function DatasetSidebar({ selected, onSelect }: SidebarProps) {
     };
   });
 
+  useEffect(() => {
+    const stored = localStorage.getItem("schemaAnalysis");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+  
+        const formatted: any = {};
+        [parsed.source, parsed.target].forEach((db: any) => {
+          if (!db?.database || !db?.tables) return;
+  
+          formatted[db.database] = {
+            tables: db.tables.map((table: any) => ({
+              name: table.name,
+              columns: Array.isArray(table.columns)
+                ? table.columns
+                : Object.keys(table.columns || {}),
+            })),
+          };
+        });
+  
+        setSchemas(formatted);
+      } catch (err) {
+        console.error("Failed to parse schemaAnalysis:", err);
+      }
+    }
+  }, []);
+  
+
   return (
     <Drawer
       variant="permanent"
@@ -234,7 +263,8 @@ export default function DatasetSidebar({ selected, onSelect }: SidebarProps) {
         </Box>
 
         <List dense disablePadding>
-          {Object.keys(sampleSchemas).map((bank) => (
+          {/* {Object.keys(sampleSchemas).map((bank) => ( */}
+          {Object.keys(schemas).map((bank) => (
             <React.Fragment key={bank}>
               <ListItemButton
                 selected={selected === bank}
@@ -252,7 +282,8 @@ export default function DatasetSidebar({ selected, onSelect }: SidebarProps) {
 
               <Collapse in={expandedBanks[bank]} timeout="auto" unmountOnExit>
                 <List component="div" disablePadding sx={{ pl: 2 }}>
-                  {sampleSchemas[bank].tables.map((table) => (
+                  {/* {sampleSchemas[bank].tables.map((table) => ( */}
+                  {schemas[bank]?.tables?.map((table: any) => (  
                     <React.Fragment key={table.name}>
                       <ListItemButton
                         onClick={() => toggleTableExpand(table.name)}

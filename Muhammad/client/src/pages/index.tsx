@@ -233,13 +233,14 @@ export default function Home() {
               }
               
               // Navigate to confirmation page with minimal data
-              router.push({
-                pathname: '/confirm',
-                query: { 
-                  sourceDb: 'source',
-                  targetDb: 'target'
-                }
-              });
+              // router.push({
+              //   pathname: '/confirm',
+              //   query: { 
+              //     sourceDb: 'source',
+              //     targetDb: 'target'
+              //   }
+              // });
+              router.push('/schema-visualizer');             
             }
             
           } catch (error) {
