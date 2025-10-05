@@ -16,7 +16,8 @@ import {
   Schema as SchemaIcon,
 } from "@mui/icons-material";
 
-export interface FileWithPreview extends File {
+export interface FileWithPreview {
+  file: File;
   preview: string;
   id: string;
 }
@@ -37,20 +38,16 @@ export const ExcelFileDropzone: React.FC<ExcelFileDropzoneProps> = ({
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       // Get array of current file names for comparison
-      const existingFileNames = allFiles.map((file) => file.name.toLowerCase());
+      const existingFileNames = allFiles.map((file) => file.file.name.toLowerCase());
 
       const newFiles = acceptedFiles.reduce((acc: FileWithPreview[], file) => {
         // Check if file with same name already exists
         if (!existingFileNames.includes(file.name.toLowerCase())) {
-          // Create a new object that preserves all File properties
-          const fileWithPreview: FileWithPreview = Object.assign(
-            new File([file], file.name, { type: file.type }),
-            {
-              preview: URL.createObjectURL(file),
-              id: Math.random().toString(36).substr(2, 9),
-            }
-          );
-          acc.push(fileWithPreview);
+          acc.push({
+            file,
+            preview: URL.createObjectURL(file),
+            id: Math.random().toString(36).substr(2, 9),
+          });
         } else {
           console.warn(
             `File '${file.name}' was not added because it already exists.`
@@ -63,7 +60,7 @@ export const ExcelFileDropzone: React.FC<ExcelFileDropzoneProps> = ({
         onFilesChange([...files, ...newFiles]);
       }
     },
-    [files, onFilesChange]
+    [files, onFilesChange, allFiles]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -80,8 +77,20 @@ export const ExcelFileDropzone: React.FC<ExcelFileDropzoneProps> = ({
 
   const removeFile = (fileId: string) => {
     const updatedFiles = files.filter((file) => file.id !== fileId);
+    // Revoke the object URL to avoid memory leaks
+    const fileToRemove = files.find(f => f.id === fileId);
+    if (fileToRemove) {
+      URL.revokeObjectURL(fileToRemove.preview);
+    }
     onFilesChange(updatedFiles);
   };
+  
+  // Clean up object URLs on unmount
+  React.useEffect(() => {
+    return () => {
+      files.forEach(file => URL.revokeObjectURL(file.preview));
+    };
+  }, [files]);
 
   return (
     <Paper
@@ -185,16 +194,8 @@ export const ExcelFileDropzone: React.FC<ExcelFileDropzoneProps> = ({
                   <TableChartIcon />
                 </ListItemIcon>
                 <ListItemText
-                  primary={file.name}
-                  secondary={`${(file.size / 1024).toFixed(2)} KB`}
-                  sx={{
-                    "& .MuiListItemText-primary": {
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "200px",
-                    },
-                  }}
+                  primary={file.file.name}
+                  secondary={`${(file.file.size / 1024 / 1024).toFixed(2)} MB`}
                 />
               </ListItem>
             ))}

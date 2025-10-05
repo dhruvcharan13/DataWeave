@@ -1,15 +1,18 @@
 import React, { useState } from "react";
-import { Box, Typography, Container, Grid, Button } from "@mui/material";
+import { Box, Typography, Button, CircularProgress } from "@mui/material";
 import ExcelFileDropzone, {
   FileWithPreview,
 } from "../components/excelFileDropzone";
 import router from "next/router";
+import { uploadFiles } from "../utils/api";
 
 export default function Home() {
   const [sourceDb, setSourceDb] = useState<FileWithPreview[]>([]);
   const [targetDb, setTargetDb] = useState<FileWithPreview[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
-  const isConfirmDisabled = sourceDb.length === 0 || targetDb.length === 0;
+  const isConfirmDisabled = sourceDb.length === 0 || targetDb.length === 0 || isUploading;
 
   React.useEffect(() => {
     console.log(sourceDb, targetDb);
@@ -89,9 +92,14 @@ export default function Home() {
       </Box>
 
       <Box sx={{ mt: 4, textAlign: "center" }}>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
           Drop your database files above to begin mapping and merging
         </Typography>
+        {uploadError && (
+          <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+            {uploadError}
+          </Typography>
+        )}
       </Box>
 
       {/* Debug section - can be removed in production */}
@@ -131,10 +139,10 @@ export default function Home() {
                   }}
                 >
                   <Typography variant="body2" noWrap sx={{ maxWidth: "70%" }}>
-                    {file.name}
+                    {file.file.name}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {(file.size / 1024).toFixed(2)} KB
+                    {(file.file.size / 1024).toFixed(2)} KB
                   </Typography>
                 </Box>
               ))}
@@ -163,10 +171,10 @@ export default function Home() {
                   }}
                 >
                   <Typography variant="body2" noWrap sx={{ maxWidth: "70%" }}>
-                    {file.name}
+                    {file.file.name}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {(file.size / 1024).toFixed(2)} KB
+                    {(file.file.size / 1024).toFixed(2)} KB
                   </Typography>
                 </Box>
               ))}
@@ -178,11 +186,63 @@ export default function Home() {
         variant="contained"
         fullWidth
         sx={{ mt: 2 }}
-        onClick={() => router.push("/confirm")}
+        onClick={async () => {
+          try {
+            setUploadError(null);
+            setIsUploading(true);
+            
+            // Upload source and target files
+            const response = await uploadFiles(
+              sourceDb.map(f => f.file),
+              targetDb.map(f => f.file)
+            );
+            
+            console.log('Upload response:', response);
+            
+            // Check for failed uploads
+            const failedSourceUploads = response.source_files.filter(f => f.status !== 'uploaded');
+            const failedTargetUploads = response.target_files.filter(f => f.status !== 'uploaded');
+            
+            if (failedSourceUploads.length > 0 || failedTargetUploads.length > 0) {
+              const failedCount = failedSourceUploads.length + failedTargetUploads.length;
+              const errorDetails = [
+                failedSourceUploads.length > 0 ? `${failedSourceUploads.length} source files failed` : null,
+                failedTargetUploads.length > 0 ? `${failedTargetUploads.length} target files failed` : null
+              ].filter(Boolean).join(' and ');
+              
+              // Show specific error message for duplicate files
+              const duplicateError = failedSourceUploads.concat(failedTargetUploads)
+                .some(f => f.reason?.includes('already exists'));
+                
+              const errorMessage = duplicateError 
+                ? 'Some files were not uploaded because they already exist. Please check and try again.'
+                : `Failed to upload ${failedCount} files (${errorDetails})`;
+              console.error(errorMessage);
+            }
+            
+            // Store user ID for future requests
+            if (response.user_id) {
+              localStorage.setItem('userId', response.user_id);
+            }
+            
+            // Navigate to confirmation page with user ID
+            router.push({
+              pathname: '/confirm',
+              query: { userId: response.user_id }
+            });
+            
+          } catch (error) {
+            console.error('Upload failed:', error);
+            setUploadError(error instanceof Error ? error.message : 'Failed to upload files. Please try again.');
+          } finally {
+            setIsUploading(false);
+          }
+        }}
         disabled={isConfirmDisabled}
         color="success"
+        startIcon={isUploading ? <CircularProgress size={20} color="inherit" /> : null}
       >
-        Visualize the Schemas
+        {isUploading ? 'Uploading...' : 'Visualize the Schemas'}
       </Button>
     </div>
   );
