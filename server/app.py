@@ -20,7 +20,6 @@ import json
 
 from prompts import generate_relationship_prompt, generate_mapping_prompt
 from starlette.concurrency import run_in_threadpool
-from newscript import BankDataMerger
 # Add the server directory to the Python path
 sys.path.append(str(Path(__file__).parent))
 
