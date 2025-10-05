@@ -228,6 +228,77 @@ def get_cross_bank_mapping_analysis(bank1_schemas: List[Dict], bank2_schemas: Li
 async def root():
     return {"message": "EY Data Integration API is running!"}
 
+@app.get("/test")
+async def test():
+    return {"message": "Test endpoint working!", "timestamp": datetime.now().isoformat()}
+
+@app.get("/test-supabase")
+async def test_supabase():
+    """Test Supabase connection"""
+    try:
+        # Test basic connection
+        result = supabase.table('files').select('*').limit(1).execute()
+        return {
+            "message": "Supabase connection successful!",
+            "tables_accessible": True,
+            "sample_data": result.data
+        }
+    except Exception as e:
+        return {
+            "message": "Supabase connection failed",
+            "error": str(e),
+            "tables_accessible": False
+        }
+
+@app.post("/test-upload")
+async def test_upload(file: UploadFile = File(...)):
+    """Simple test upload endpoint"""
+    try:
+        content = await file.read()
+        return {
+            "message": "File received successfully",
+            "filename": file.filename,
+            "size": len(content),
+            "content_type": file.content_type
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/debug-upload")
+async def debug_upload():
+    """Debug upload endpoint"""
+    return {"message": "Debug endpoint working", "timestamp": datetime.now().isoformat()}
+
+@app.post("/create-database-schema")
+async def create_database_schema():
+    """Create the database schema tables"""
+    try:
+        # Read the SQL schema file
+        schema_file = "supabase-schema.sql"
+        if os.path.exists(schema_file):
+            with open(schema_file, 'r') as f:
+                sql_content = f.read()
+            
+            # Split by semicolon and execute each statement
+            statements = [stmt.strip() for stmt in sql_content.split(';') if stmt.strip()]
+            
+            for statement in statements:
+                if statement:
+                    try:
+                        # Execute the SQL statement
+                        result = supabase.rpc('exec_sql', {'sql': statement}).execute()
+                        print(f"Executed: {statement[:50]}...")
+                    except Exception as e:
+                        print(f"Error executing statement: {e}")
+                        continue
+            
+            return {"message": "Database schema created successfully", "statements_executed": len(statements)}
+        else:
+            return {"error": "Schema file not found"}
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating database schema: {str(e)}")
+
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
@@ -544,6 +615,159 @@ async def get_analysis_results():
             return {"message": "No analysis results found. Run /comprehensive-analysis first."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/upload-files")
+async def upload_files(files: List[UploadFile] = File(...)):
+    """Upload files to Supabase Storage and store metadata"""
+    try:
+        print(f"Received {len(files)} files for upload")
+        print(f"Files: {[f.filename for f in files]}")
+        uploaded_files = []
+        
+        for file in files:
+            print(f"Processing file: {file.filename}")
+            try:
+                # Read file content
+                content = await file.read()
+                
+                # Determine which bucket to use based on filename
+                file_name = file.filename.lower()
+                is_bank1 = 'bank1' in file_name or 'bank 1' in file_name
+                is_bank2 = 'bank2' in file_name or 'bank 2' in file_name
+                
+                if is_bank1:
+                    bucket_name = "bank1-files"
+                elif is_bank2:
+                    bucket_name = "bank2-files"
+                else:
+                    bucket_name = "bank1-files"  # default to bank1
+                
+                # Upload to Supabase Storage
+                file_path = f"bank-data/{file.filename}"
+                result = supabase.storage.from_(bucket_name).upload(file_path, content)
+                
+                # Store file metadata in database
+                file_record = {
+                    "file_name": file.filename,
+                    "file_type": file.content_type or "application/octet-stream",
+                    "file_path": file_path,
+                    "file_size": len(content),
+                    "bucket_name": bucket_name,
+                    "uploaded_at": datetime.now().isoformat()
+                }
+                
+                # Insert into files table
+                db_result = supabase.table("files").insert(file_record).execute()
+                
+                uploaded_files.append({
+                    "filename": file.filename,
+                    "file_path": file_path,
+                    "file_size": len(content),
+                    "id": db_result.data[0]["id"] if db_result.data else None
+                })
+                
+            except Exception as e:
+                print(f"Error uploading {file.filename}: {str(e)}")
+                continue
+        
+        return {
+            "message": f"Successfully uploaded {len(uploaded_files)} files to Supabase Storage",
+            "uploaded_files": uploaded_files
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error uploading files: {str(e)}")
+
+@app.post("/generate-schema-prompts")
+async def generate_schema_prompts(request: dict):
+    """Generate schema prompts from uploaded schema files"""
+    try:
+        schema_files = request.get('schema_files', [])
+        prompts = []
+        
+        for schema_file in schema_files:
+            file_path = schema_file['path']
+            bank_name = schema_file['bank']
+            
+            # Read schema file and generate prompt
+            try:
+                # Read the schema Excel file
+                df = pd.read_excel(file_path, header=None)
+                
+                # Find the first row that looks like a header
+                header_row = 0
+                for idx, row in df.iterrows():
+                    if any(isinstance(cell, str) and any(term in str(cell).lower() for term in ['name', 'description']) for cell in row):
+                        header_row = idx
+                        break
+                
+                # Read the file again with the found header row
+                df = pd.read_excel(file_path, header=header_row)
+                df = df.dropna(how='all')
+                df = df.rename(columns=lambda x: str(x).strip() if isinstance(x, str) else x)
+                
+                # Find name and description columns
+                name_col = None
+                desc_col = None
+                for col in df.columns:
+                    col_str = str(col).lower()
+                    if 'name' in col_str or 'field' in col_str:
+                        name_col = col
+                    elif 'desc' in col_str or 'definition' in col_str:
+                        desc_col = col
+                
+                if name_col is None and len(df.columns) > 0:
+                    name_col = df.columns[0]
+                if desc_col is None and len(df.columns) > 1:
+                    desc_col = df.columns[1]
+                
+                # Generate prompt
+                prompt = f"""# {bank_name} Database Schema Analysis
+
+Please analyze the following database schema and identify relationships between tables.
+
+## Database: {bank_name}
+
+### Schema Definition:
+
+"""
+                
+                for _, row in df.iterrows():
+                    try:
+                        field = str(row[name_col]).strip() if name_col and pd.notna(row.get(name_col)) else ""
+                        desc = str(row[desc_col]).strip() if desc_col and pd.notna(row.get(desc_col)) else ""
+                        if field and field.lower() != 'nan' and not any(term in field.lower() for term in ['name', 'description']):
+                            prompt += f"{field:<30} | {desc}\n"
+                    except (KeyError, IndexError):
+                        continue
+                
+                prompt += """
+## Your Task:
+
+1. **Identify Primary Keys**: For each table, identify which column(s) serve as primary keys
+2. **Identify Foreign Keys**: Find columns that reference other tables
+3. **Map Relationships**: Create a relationship map showing how tables connect
+4. **Suggest Improvements**: Recommend any schema improvements
+
+Please provide your analysis in JSON format with tables, relationships, and suggestions.
+"""
+                
+                prompts.append({
+                    "bank_name": bank_name,
+                    "prompt": prompt
+                })
+                
+            except Exception as e:
+                print(f"Error processing schema file {file_path}: {str(e)}")
+                continue
+        
+        return {
+            "message": "Schema prompts generated successfully",
+            "prompts": prompts
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating schema prompts: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
