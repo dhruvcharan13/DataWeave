@@ -11,8 +11,11 @@ import pandas as pd
 import sys
 from pathlib import Path
 from gemini_service import generate_text
-
-
+from schema_detector import process_directory
+import uuid
+from fastapi import Form
+import re
+import json
 # Add the server directory to the Python path
 sys.path.append(str(Path(__file__).parent))
 
@@ -42,8 +45,7 @@ async def health_check():
     return {"status": "healthy"}
 
 
-import uuid
-from fastapi import Form
+
 
 UPLOAD_BASE_DIR = "user_uploads"
 
@@ -161,7 +163,7 @@ async def upload_files(
                     "reason": str(e)
                 })
             
-        from schema_detector import process_directory
+
         
         # Process source and target directories
         source_dir = os.path.join(user_dir, "source")
@@ -171,12 +173,113 @@ async def upload_files(
         source_info = process_directory(source_dir)
         target_info = process_directory(target_dir)
         
-        # Add schema and file info to the response
-        saved_files['schema_info'] = {
+        # Prepare schema information
+        schema_info = {
             'source': source_info,
             'target': target_info
         }
         
+        schema_prompt = """
+        I have two databases, each represented by a set of CSV files. Each file represents a table.
+
+        For both databases, I'll provide:
+        - The table name
+        - The file name
+        - The headers (columns)
+        - Optional column descriptions
+
+        Your job:
+        1. Identify the primary key for each table.
+        - Usually customerId for customer, accountId for accounts, transactionReference for transactions.
+        2. Identify foreign key relationships between tables based on column names and their meaning.
+        - e.g., customerId in an account table → customerId in customer table.
+        - accountId in a transactions table → accountId in the account table.
+        - agentCustomerId or similar → links back to customerId.
+        3. Return a **JSON output only (no explanations or comments)** that:
+        - Contains both databases (source and target)
+        - Each database lists its tables
+        - Each table includes its primaryKey, foreignKeys, and columns
+        - Use "references": "TableName.columnName" for foreign keys
+        4. The JSON must be valid and directly usable by a frontend to draw table nodes and their relationships.
+
+        Format strictly as JSON with this structure:
+        {
+        "source": {
+            "database": "<SourceDatabaseName>",
+            "tables": [
+            {
+                "name": "<TableName>",
+                "primaryKey": "<ColumnName>",
+                "foreignKeys": [
+                {
+                    "column": "<ColumnName>",
+                    "references": "<OtherTable.OtherColumn>"
+                }
+                ],
+                "columns": ["col1", "col2", "..."]
+            }
+            ]
+        },
+        "target": {
+            "database": "<TargetDatabaseName>",
+            "tables": [
+            {
+                "name": "<TableName>",
+                "primaryKey": "<ColumnName>",
+                "foreignKeys": [
+                {
+                    "column": "<ColumnName>",
+                    "references": "<OtherTable.OtherColumn>"
+                }
+                ],
+                "columns": ["col1", "col2", "..."]
+            }
+            ]
+        }
+        }
+
+        Here is the schema information:
+        """
+        
+        # Add schema info to the prompt
+        
+        schema_prompt = schema_prompt + json.dumps(schema_info, indent=2)
+        print(schema_prompt)
+        #return {"schema_prompt": "ok"}
+        try:
+            # Generate the schema analysis using the LLM
+            schema_analysis = await generate_text(schema_prompt)
+            
+            # Try to extract JSON from markdown code blocks if present
+            try:
+
+                # Look for JSON in markdown code blocks
+                json_match = re.search(r'```(?:json)?\s*({[\s\S]*?})\s*```', schema_analysis)
+                if json_match:
+                    # Parse the JSON from the code block
+                    analysis_json = json.loads(json_match.group(1))
+                    schema_analysis = analysis_json
+                else:
+                    # Try to parse the whole response as JSON
+                    try:
+                        schema_analysis = json.loads(schema_analysis)
+                    except json.JSONDecodeError:
+                        # If it's not valid JSON, keep it as is
+                        pass
+            except Exception as e:
+                print(f"Error parsing analysis JSON: {str(e)}")
+            
+            # Store the analysis along with the original schema info
+            saved_files['schema_info'] = {
+                'source': source_info,
+                'target': target_info,
+                'analysis': schema_analysis
+            }
+        except Exception as e:
+            print(f"Error generating schema analysis: {str(e)}")
+            # If analysis fails, still return the schema info without analysis
+            saved_files['schema_info'] = schema_info
+            saved_files['analysis_error'] = str(e)
         return saved_files
         
     except Exception as e:
