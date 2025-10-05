@@ -17,12 +17,15 @@ import uuid
 from fastapi import Form
 import re
 import json
+
+from prompts import generate_relationship_prompt, generate_mapping_prompt
 # Add the server directory to the Python path
 sys.path.append(str(Path(__file__).parent))
 
 # Initialize FastAPI
 app = FastAPI()
 
+UPLOAD_BASE_DIR = "user_uploads"
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
@@ -32,7 +35,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @app.get("/")
 async def root():
     try:
@@ -40,15 +42,6 @@ async def root():
     except Exception as e:
         return {"message": str(e)}
     return {"message": response}
-
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy"}
-
-
-
-
-UPLOAD_BASE_DIR = "user_uploads"
 
 # Create base upload directory if it doesn't exist
 os.makedirs(UPLOAD_BASE_DIR, exist_ok=True)
@@ -140,29 +133,7 @@ async def upload_files(
             source_info = extract_schema_from_dir(source_dir)
             target_info = extract_schema_from_dir(target_dir)
             
-            schema_prompt = """
-            Analyze the following database schemas and identify:
-            1. Primary keys for each table
-            2. Foreign key relationships between tables
-            3. Table structures
-            
-            Return only a valid JSON object with this structure:
-            {
-                "source": {
-                    "database": "<name>",
-                    "tables": [{
-                        "name": "<table_name>",
-                        "primaryKey": "<column>",
-                        "foreignKeys": [{"column": "<col>", "references": "<table.column>"}],
-                        "columns": ["col1": "column_def_from schema", "col2": "column_def_from schema"]
-                    }]
-                },
-                "target": { ... }
-            }
-            
-            Schema Information:
-            """ + json.dumps({"source": source_info, "target": target_info}, indent=2)
-            
+            schema_prompt = generate_relationship_prompt(source_info, target_info)
             # Generate schema analysis
             schema_analysis = await generate_text(schema_prompt)
             
@@ -191,6 +162,26 @@ async def upload_files(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"error": f"An unexpected error occurred: {str(e)}"}
         )
-    
+
+
+@app.post("/api/generate-suggested-mapping")
+async def generate_suggested_mapping(schema_analysis: dict, user_id: str):
+    try:
+        source_database = schema_analysis["source"]["database"]
+        target_database = schema_analysis["target"]["database"]
+
+        mapping_prompt = generate_mapping_prompt(source_database, target_database)
+
+        mapping_response = await generate_text(mapping_prompt)
+
+        
+        print(mapping_response) 
+    except Exception as e:
+        print(f"Error during suggested mapping generation: {str(e)}")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"error": f"Suggested mapping generation failed: {str(e)}"}
+        )
+        
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)

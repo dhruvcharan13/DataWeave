@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Typography, Button, CircularProgress } from "@mui/material";
+import { Box, Typography, Button, CircularProgress, Container } from "@mui/material";
 import ExcelFileDropzone, {
   FileWithPreview,
 } from "../components/excelFileDropzone";
@@ -19,7 +19,7 @@ export default function Home() {
   }, [sourceDb, targetDb]);
 
   return (
-    <div>
+    <Container maxWidth="lg" sx={{ my: 2 }}>
       <Box sx={{ textAlign: "center", mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
           Database Merger
@@ -296,6 +296,6 @@ export default function Home() {
       >
         {isUploading ? 'Uploading...' : 'Visualize the Schemas'}
       </Button>
-    </div>
+    </Container>
   );
 }

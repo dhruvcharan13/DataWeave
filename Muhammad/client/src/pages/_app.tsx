@@ -13,6 +13,7 @@ import { Container } from "@mui/material";
 import "../components/graphStyles.css";
 
 
+
 function ThemedApp({ Component, pageProps }: AppProps) {
   const themeMode: ThemeMode = useSelector(
     (state: AppState) => state.uiState.themeMode
@@ -23,9 +24,7 @@ function ThemedApp({ Component, pageProps }: AppProps) {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <ResponsiveAppBar />
-      <Container maxWidth="lg" sx={{ my: 2 }}>
         <Component {...pageProps} />
-      </Container>
     </ThemeProvider>
   );
 }
