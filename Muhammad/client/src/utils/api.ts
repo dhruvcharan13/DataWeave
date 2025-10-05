@@ -8,10 +8,22 @@ export interface UploadedFile {
   reason?: string;
 }
 
+export interface SchemaAnalysis {
+  source?: {
+    database?: string;
+    tables?: any[];
+  };
+  target?: {
+    database?: string;
+    tables?: any[];
+  };
+}
+
 export interface UploadResponse {
   source_files: UploadedFile[];
   target_files: UploadedFile[];
   user_id: string;
+  schema_analysis?: SchemaAnalysis;
 }
 
 export const uploadFiles = async (sourceFiles: File[], targetFiles: File[]): Promise<UploadResponse> => {

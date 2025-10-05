@@ -59,13 +59,9 @@ async def upload_files(
     user_id: str = Form(None)
 ):
     try:
-        print(f"Received upload request with {len(source_files)} source files and {len(target_files)} target files")
-        
-        # Generate a user ID if not provided
         if not user_id or not user_id.strip():
-            # return 404
             return JSONResponse(
-                status_code=status.HTTP_404_NOT_FOUND,
+                status_code=status.HTTP_400_BAD_REQUEST,
                 content={"error": "User ID is required"}
             )
             
@@ -77,7 +73,8 @@ async def upload_files(
         os.makedirs(source_dir, exist_ok=True)
         os.makedirs(target_dir, exist_ok=True)
         
-        saved_files = {"source_files": [], "target_files": [], "user_id": user_id}
+        # Track errors
+        errors = []
         
         # Save source files
         for file in source_files:
@@ -86,41 +83,19 @@ async def upload_files(
                 
             file_path = os.path.join(source_dir, os.path.basename(file.filename))
             
-            # Skip if file already exists and has content
-            if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
-                saved_files["source_files"].append({
-                    "filename": os.path.basename(file.filename),
-                    "status": "skipped",
-                    "reason": "File already exists",
-                    "path": file_path,
-                    "size": os.path.getsize(file_path)
-                })
-                continue
-                
             try:
-                # Read file content once
                 contents = await file.read()
                 if not contents:
                     raise ValueError("File is empty")
                     
-                # Write to file
-                with open(file_path, "wb") as buffer:
-                    buffer.write(contents)
-                    
-                saved_files["source_files"].append({
-                    "filename": os.path.basename(file.filename),
-                    "status": "uploaded",
-                    "path": file_path,
-                    "size": len(contents)
-                })
+                if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
+                    with open(file_path, "wb") as buffer:
+                        buffer.write(contents)
             except Exception as e:
-                print(f"Error processing {file.filename}: {str(e)}")
-                saved_files["source_files"].append({
-                    "filename": os.path.basename(file.filename) if file.filename else "unknown",
-                    "status": "error",
-                    "reason": str(e)
-                })
-            
+                error_msg = f"Error processing source file {file.filename}: {str(e)}"
+                print(error_msg)
+                errors.append(error_msg)
+        
         # Save target files
         for file in target_files:
             if not file.filename or not file.filename.strip():
@@ -128,164 +103,81 @@ async def upload_files(
                 
             file_path = os.path.join(target_dir, os.path.basename(file.filename))
             
-            # Skip if file already exists and has content
-            if os.path.exists(file_path) and os.path.getsize(file_path) > 0:
-                saved_files["target_files"].append({
-                    "filename": os.path.basename(file.filename),
-                    "status": "skipped",
-                    "reason": "File already exists",
-                    "path": file_path,
-                    "size": os.path.getsize(file_path)
-                })
-                continue
-                
             try:
-                # Read file content once
                 contents = await file.read()
                 if not contents:
                     raise ValueError("File is empty")
                     
-                # Write to file
-                with open(file_path, "wb") as buffer:
-                    buffer.write(contents)
-                    
-                saved_files["target_files"].append({
-                    "filename": os.path.basename(file.filename),
-                    "status": "uploaded",
-                    "path": file_path,
-                "size": len(contents)
-            })
+                if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
+                    with open(file_path, "wb") as buffer:
+                        buffer.write(contents)
             except Exception as e:
-                print(f"Error processing {file.filename}: {str(e)}")
-                saved_files["target_files"].append({
-                    "filename": os.path.basename(file.filename) if file.filename else "unknown",
-                    "status": "error",
-                    "reason": str(e)
-                })
-            
-
+                error_msg = f"Error processing target file {file.filename}: {str(e)}"
+                print(error_msg)
+                errors.append(error_msg)
         
-        # Process source and target directories
-        source_dir = os.path.join(user_dir, "source")
-        target_dir = os.path.join(user_dir, "target")
+        # If there were any errors, return them immediately
+        if errors:
+            return JSONResponse(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                content={"errors": errors}
+            )
         
-        # Get schema and file information
-        source_info = process_directory(source_dir)
-        target_info = process_directory(target_dir)
-        
-        # Prepare schema information
-        schema_info = {
-            'source': source_info,
-            'target': target_info
-        }
-        
-        schema_prompt = """
-        I have two databases, each represented by a set of CSV files. Each file represents a table.
-
-        For both databases, I'll provide:
-        - The table name
-        - The file name
-        - The headers (columns)
-        - Optional column descriptions
-
-        Your job:
-        1. Identify the primary key for each table.
-        - Usually customerId for customer, accountId for accounts, transactionReference for transactions.
-        2. Identify foreign key relationships between tables based on column names and their meaning.
-        - e.g., customerId in an account table → customerId in customer table.
-        - accountId in a transactions table → accountId in the account table.
-        - agentCustomerId or similar → links back to customerId.
-        3. Return a **JSON output only (no explanations or comments)** that:
-        - Contains both databases (source and target)
-        - Each database lists its tables
-        - Each table includes its primaryKey, foreignKeys, and columns
-        - Use "references": "TableName.columnName" for foreign keys
-        4. The JSON must be valid and directly usable by a frontend to draw table nodes and their relationships.
-
-        Format strictly as JSON with this structure:
-        {
-        "source": {
-            "database": "<SourceDatabaseName>",
-            "tables": [
-            {
-                "name": "<TableName>",
-                "primaryKey": "<ColumnName>",
-                "foreignKeys": [
-                {
-                    "column": "<ColumnName>",
-                    "references": "<OtherTable.OtherColumn>"
-                }
-                ],
-                "columns": ["col1", "col2", "..."]
-            }
-            ]
-        },
-        "target": {
-            "database": "<TargetDatabaseName>",
-            "tables": [
-            {
-                "name": "<TableName>",
-                "primaryKey": "<ColumnName>",
-                "foreignKeys": [
-                {
-                    "column": "<ColumnName>",
-                    "references": "<OtherTable.OtherColumn>"
-                }
-                ],
-                "columns": ["col1", "col2", "..."]
-            }
-            ]
-        }
-        }
-
-        Here is the schema information:
-        """
-        
-        # Add schema info to the prompt
-        
-        schema_prompt = schema_prompt + json.dumps(schema_info, indent=2)
-        print(schema_prompt)
-        #return {"schema_prompt": "ok"}
+        # Process directories to get schema info
         try:
-            # Generate the schema analysis using the LLM
+            source_info = process_directory(source_dir)
+            target_info = process_directory(target_dir)
+            
+            schema_prompt = """
+            Analyze the following database schemas and identify:
+            1. Primary keys for each table
+            2. Foreign key relationships between tables
+            3. Table structures
+            
+            Return only a valid JSON object with this structure:
+            {
+                "source": {
+                    "database": "<name>",
+                    "tables": [{
+                        "name": "<table_name>",
+                        "primaryKey": "<column>",
+                        "foreignKeys": [{"column": "<col>", "references": "<table.column>"}],
+                        "columns": ["col1", "col2"]
+                    }]
+                },
+                "target": { ... }
+            }
+            
+            Schema Information:
+            """ + json.dumps({"source": source_info, "target": target_info}, indent=2)
+            
+            # Generate schema analysis
             schema_analysis = await generate_text(schema_prompt)
             
-            # Try to extract JSON from markdown code blocks if present
-            try:
-
-                # Look for JSON in markdown code blocks
-                json_match = re.search(r'```(?:json)?\s*({[\s\S]*?})\s*```', schema_analysis)
-                if json_match:
-                    # Parse the JSON from the code block
-                    analysis_json = json.loads(json_match.group(1))
-                    schema_analysis = analysis_json
-                else:
-                    # Try to parse the whole response as JSON
-                    try:
-                        schema_analysis = json.loads(schema_analysis)
-                    except json.JSONDecodeError:
-                        # If it's not valid JSON, keep it as is
-                        pass
-            except Exception as e:
-                print(f"Error parsing analysis JSON: {str(e)}")
+            # Extract JSON from response
+            json_match = re.search(r'```(?:json)?\s*({[\s\S]*?})\s*```', schema_analysis)
+            if json_match:
+                schema_analysis = json.loads(json_match.group(1))
+            else:
+                try:
+                    schema_analysis = json.loads(schema_analysis)
+                except json.JSONDecodeError:
+                    raise ValueError("Failed to parse schema analysis")
             
-            # Store the analysis along with the original schema info
-            saved_files['schema_info'] = {
-                'source': source_info,
-                'target': target_info,
-                'analysis': schema_analysis
-            }
+            return {"schema_analysis": schema_analysis}
+            
         except Exception as e:
-            print(f"Error generating schema analysis: {str(e)}")
-            # If analysis fails, still return the schema info without analysis
-            saved_files['schema_info'] = schema_info
-            saved_files['analysis_error'] = str(e)
-        return saved_files
-        
+            print(f"Error during schema analysis: {str(e)}")
+            return JSONResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={"error": f"Schema analysis failed: {str(e)}"}
+            )
+            
     except Exception as e:
+        print(f"Unexpected error: {str(e)}")
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={"error": f"Failed to process files: {str(e)}"}
+            content={"error": f"An unexpected error occurred: {str(e)}"}
         )
     
 

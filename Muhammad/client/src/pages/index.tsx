@@ -199,37 +199,48 @@ export default function Home() {
             
             console.log('Upload response:', response);
             
-            // Check for failed uploads
-            const failedSourceUploads = response.source_files.filter(f => f.status !== 'uploaded');
-            const failedTargetUploads = response.target_files.filter(f => f.status !== 'uploaded');
-            
-            if (failedSourceUploads.length > 0 || failedTargetUploads.length > 0) {
-              const failedCount = failedSourceUploads.length + failedTargetUploads.length;
-              const errorDetails = [
-                failedSourceUploads.length > 0 ? `${failedSourceUploads.length} source files failed` : null,
-                failedTargetUploads.length > 0 ? `${failedTargetUploads.length} target files failed` : null
-              ].filter(Boolean).join(' and ');
+            // Handle schema analysis response
+            if (response.schema_analysis) {
+              const { source, target } = response.schema_analysis;
               
-              // Show specific error message for duplicate files
-              const duplicateError = failedSourceUploads.concat(failedTargetUploads)
-                .some(f => f.reason?.includes('already exists'));
-                
-              const errorMessage = duplicateError 
-                ? 'Some files were not uploaded because they already exist. Please check and try again.'
-                : `Failed to upload ${failedCount} files (${errorDetails})`;
-              console.error(errorMessage);
+              // Store the schema analysis in localStorage for the next page
+              localStorage.setItem('schemaAnalysis', JSON.stringify({
+                source: {
+                  database: source?.database || 'source',
+                  tables: source?.tables || []
+                },
+                target: {
+                  database: target?.database || 'target',
+                  tables: target?.tables || []
+                }
+              }));
+              
+              // Navigate to confirmation page with schema data
+              router.push({
+                pathname: '/confirm',
+                query: { 
+                  sourceDb: source?.database || 'source',
+                  targetDb: target?.database || 'target'
+                }
+              });
+            } else {
+              // Fallback for older response format
+              console.warn('Unexpected response format. Falling back to legacy handling.');
+              
+              // Store user ID for future requests if available
+              if (response.user_id) {
+                localStorage.setItem('userId', response.user_id);
+              }
+              
+              // Navigate to confirmation page with minimal data
+              router.push({
+                pathname: '/confirm',
+                query: { 
+                  sourceDb: 'source',
+                  targetDb: 'target'
+                }
+              });
             }
-            
-            // Store user ID for future requests
-            if (response.user_id) {
-              localStorage.setItem('userId', response.user_id);
-            }
-            
-            // Navigate to confirmation page with user ID
-            router.push({
-              pathname: '/confirm',
-              query: { userId: response.user_id }
-            });
             
           } catch (error) {
             console.error('Upload failed:', error);
