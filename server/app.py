@@ -13,6 +13,7 @@ import sys
 from pathlib import Path
 from gemini_service import generate_text
 from schema_detector import process_directory
+from script import BankDataMerger
 import uuid
 from fastapi import Form
 import re
@@ -174,15 +175,27 @@ async def generate_suggested_mapping(schema_analysis: dict):
         mapping_prompt = generate_mapping_prompt(source_database, target_database)
 
         mapping_response = await generate_text(mapping_prompt)
+        
+        # Debug: Print the raw response from Gemini
+        print("=" * 80)
+        print("RAW GEMINI RESPONSE:")
+        print(mapping_response[:500])  # First 500 characters
+        print("=" * 80)
 
-        json_match = re.search(r'```(?:json)?\s*({[\s\S]*?})\s*```', mapping_response)
+        # Try to extract JSON from markdown code blocks first
+        json_match = re.search(r'```(?:json)?\s*(\{[\s\S]*?\})\s*```', mapping_response)
         if json_match:
-            mapping_response = json.loads(json_match.group(1))
-        else:
-            try:
-                mapping_response = json.loads(mapping_response)
-            except json.JSONDecodeError:
-                raise ValueError("Failed to parse mapping response")
+            mapping_response = json_match.group(1)
+        
+        # Now parse the JSON
+        try:
+            mapping_response = json.loads(mapping_response)
+        except json.JSONDecodeError as e:
+            print(f"JSON Parse Error: {str(e)}")
+            print(f"Full response length: {len(mapping_response)} chars")
+            print(f"First 1000 chars of response:\n{mapping_response[:1000]}")
+            print(f"Last 500 chars of response:\n{mapping_response[-500:]}")
+            raise ValueError("Failed to parse mapping response")
         
         return {"mapping_response": mapping_response}
     except Exception as e:
@@ -191,9 +204,6 @@ async def generate_suggested_mapping(schema_analysis: dict):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"error": f"Suggested mapping generation failed: {str(e)}"}
         )
-        
-if __name__ == "__main__":
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
 
 # New endpoint to run the merge process and save outputs under DataWeave/output
 @app.post("/api/run-merge")
@@ -242,3 +252,6 @@ async def run_merge(mapping_path: str | None = None):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"error": f"Merge failed: {str(e)}"}
         )
+        
+if __name__ == "__main__":
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)

@@ -120,7 +120,7 @@ export const ExcelFileDropzone: React.FC<ExcelFileDropzoneProps> = ({
           flex: 1,
           border: "2px dashed",
           borderColor: "divider",
-          borderRadius: 1,
+          borderRadius: 2,
           p: 3,
           display: "flex",
           flexDirection: "column",
@@ -158,7 +158,7 @@ export const ExcelFileDropzone: React.FC<ExcelFileDropzoneProps> = ({
             bgcolor: "action.hover",
             px: 1,
             py: 0.5,
-            borderRadius: 1,
+            borderRadius: 2,
             fontSize: "0.7rem",
           }}
         >

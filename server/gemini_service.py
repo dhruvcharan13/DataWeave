@@ -1,26 +1,22 @@
 import os
 from typing import Optional
-from google import genai
+import google.generativeai as genai
 from dotenv import load_dotenv
+import asyncio
 
 # Load environment variables from .env file
 load_dotenv()
 
-# Initialize the client as None - it will be initialized on first use
-_client = None
+# Configure the API key
+genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
 
-def get_client() -> genai.Client:
-    """Get the singleton Gemini client instance."""
-    global _client
-    if _client is None:
-        _client =  genai.Client()  # Uses GEMINI_API_KEY from environment
-    return _client
-
-async def generate_text(prompt: str, model: str = "gemini-2.5-flash-lite") -> str:
+async def generate_text(prompt: str, model: str = "gemini-2.0-flash-exp") -> str:
     """Generate text using the Gemini model."""
-    client = get_client()
-    response = client.models.generate_content(
-        model=model,
-        contents=prompt
-    )
-    return response.text
+    generative_model = genai.GenerativeModel(model)
+    
+    # Run the blocking call in a thread pool
+    def _generate_sync():
+        response = generative_model.generate_content(prompt)
+        return response.text
+    
+    return await asyncio.to_thread(_generate_sync)

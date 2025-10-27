@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Box, Typography, CircularProgress, Alert, Button } from "@mui/material";
+import { Box, Typography, CircularProgress, Alert, Button, Chip } from "@mui/material";
+import { AccountTree, AutoAwesome } from "@mui/icons-material";
 import MappingGrid from "../components/MappingGrid";
 
 interface Mapping {
@@ -85,23 +86,36 @@ const SuggestedMapping = () => {
   };
 
   return (
-    <Box sx={{ margin: "1rem" }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography
-          variant="h4"
-          gutterBottom
-          sx={{
-            fontFamily:
-              '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, "Noto Sans", sans-serif',
-            fontWeight: 800,
-          }}
-        >
-          Suggested Mapping
-        </Typography>
-        <Button variant="contained" onClick={handleMap} disabled={isMerging}>
-          {isMerging ? "Mapping..." : "Map"}
-        </Button>
-      </Box>
+      <Box sx={{ margin: "1rem" }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1, py: 0.5 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <AccountTree sx={{ fontSize: 24, color: 'primary.main' }} />
+            <Typography
+              variant="h5"
+              sx={{
+                fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, "Noto Sans", sans-serif',
+                fontWeight: 600,
+                letterSpacing: '0.02em',
+                background: 'linear-gradient(45deg, #6366f1 30%, #ec4899 90%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Suggested Mapping
+            </Typography>
+            <Chip 
+              icon={<AutoAwesome />} 
+              label="AI-Powered" 
+              size="small" 
+              color="primary" 
+              variant="outlined"
+              sx={{ fontSize: '0.75rem', height: 24 }}
+            />
+          </Box>
+          <Button variant="contained" onClick={handleMap} disabled={isMerging} size="small">
+            {isMerging ? "Mapping..." : "Run Merge"}
+          </Button>
+        </Box>
       <MappingGrid data={mappings} />
     </Box>
   );

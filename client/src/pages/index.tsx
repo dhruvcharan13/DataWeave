@@ -21,8 +21,13 @@ export default function Home() {
   return (
     <Container maxWidth="lg" sx={{ my: 2 }}>
       <Box sx={{ textAlign: "center", mb: 4 }}>
-        <Typography variant="h2" component="h1" gutterBottom sx={{ fontWeight: 800 }}>
-          Database Merger
+        <Typography variant="h2" component="h1" gutterBottom sx={{ 
+          fontWeight: 800,
+          background: 'linear-gradient(45deg, #6366f1 30%, #ec4899 90%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+        }}>
+          DataWeave
         </Typography>
         <Typography
           variant="subtitle1"
@@ -30,16 +35,7 @@ export default function Home() {
           maxWidth="md"
           mx="auto"
         >
-          Upload and merge database tables from multiple sources. Map fields
-          between schemas to combine your data seamlessly.
-        </Typography>
-
-        <Typography
-          variant="subtitle1"
-          color="text.secondary"
-          maxWidth="md"
-          mx="auto"
-        >
+          Intelligent database schema analysis and field mapping powered by AI
         </Typography>
       </Box>
 
@@ -184,7 +180,14 @@ export default function Home() {
       <Button
         variant="contained"
         fullWidth
-        sx={{ mt: 2 }}
+        sx={{ 
+          mt: 4,
+          py: 1.5,
+          fontSize: '1.1rem',
+          fontWeight: 600,
+          borderRadius: 2,
+          boxShadow: '0 4px 14px 0 rgba(99, 102, 241, 0.39)',
+        }}
         onClick={async () => {
           try {
             setUploadError(null);

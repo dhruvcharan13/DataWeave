@@ -11,6 +11,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
+import Image from "next/image";
 import { AppState } from "../store/appState";
 import { uiActions, ThemeMode } from "../ui/slice";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -61,25 +62,27 @@ function ResponsiveAppBar() {
   };
 
   return (
-    <AppBarWrapper position="static">
+    <AppBar position="static" sx={{ bgcolor: 'transparent !important', backgroundColor: 'transparent !important', boxShadow: 'none' }}>
       <Toolbar disableGutters sx={{ pl: 2 }}>
-        <Typography
-          variant="h6"
-          noWrap
+        <Box
           component="a"
           onClick={() => onClickRoute("/")}
           sx={{
             display: { xs: "none", md: "flex" },
-            fontWeight: 800,
-            letterSpacing: ".05rem",
-            fontFamily:
-              '"Inter Tight", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, "Noto Sans", sans-serif',
             mr: 2,
             cursor: "pointer",
+            height: 54,
+            width: "auto",
           }}
         >
-          DataWeave
-        </Typography>
+          <Image
+            src="/dwlogo.png"
+            alt="DataWeave"
+            height={54}
+            width={161}
+            style={{ objectFit: "contain" }}
+          />
+        </Box>
 
         <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
           <IconButton
@@ -115,26 +118,26 @@ function ResponsiveAppBar() {
             ))}
           </Menu>
         </Box>
-        <Typography
-          variant="h6"
-          noWrap
+        <Box
           component="a"
           onClick={() => onClickRoute("/")}
           sx={{
             mr: 2,
             display: { xs: "flex", md: "none" },
             flexGrow: 1,
-            fontWeight: 800,
-            letterSpacing: ".05rem",
-            fontFamily:
-              '"Inter Tight", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, "Noto Sans", sans-serif',
-            color: "inherit",
-            textDecoration: "none",
             cursor: "pointer",
+            height: 54,
+            width: "auto",
           }}
         >
-          DataWeave
-        </Typography>
+          <Image
+            src="/dwlogo.png"
+            alt="DataWeave"
+            height={54}
+            width={161}
+            style={{ objectFit: "contain" }}
+          />
+        </Box>
         <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
           {pages.map((page) => (
             <Button
@@ -196,13 +199,12 @@ function ResponsiveAppBar() {
           </Menu>
         </Box>
       </Toolbar>
-    </AppBarWrapper>
+    </AppBar>
   );
 }
 export default ResponsiveAppBar;
 
 const AppBarWrapper = styled(AppBar)`
-  background-color: #000 !important;
-  color: #fff;
   box-shadow: none;
+  background-color: transparent !important;
 `;

@@ -47,12 +47,12 @@ export default function MappingGrid({ data = [] }) {
           <Box
             sx={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}
           >
-            <Typography variant="body2" sx={{ fontWeight: 600, color: "#fff" }}>
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
               {table}
             </Typography>
             <Typography
               variant="caption"
-              sx={{ color: "#aaa", fontSize: "0.75rem" }}
+              sx={{ color: "text.secondary", fontSize: "0.75rem" }}
             >
               {column}
             </Typography>
@@ -82,10 +82,10 @@ export default function MappingGrid({ data = [] }) {
             MenuProps={{
               PaperProps: {
                 sx: {
-                  bgcolor: "#1e1e1e",
-                  color: "#fff",
+                  bgcolor: "background.paper",
                   maxHeight: 320,
-                  border: "1px solid #333",
+                  border: "1px solid",
+                  borderColor: "divider",
                   borderRadius: 2,
                   "& .MuiMenuItem-root": {
                     py: 1,
@@ -94,12 +94,15 @@ export default function MappingGrid({ data = [] }) {
                     transition: "all 0.2s ease",
                   },
                   "& .MuiMenuItem-root:hover": {
-                    bgcolor: "#333",
+                    bgcolor: "action.hover",
                   },
                   "& .MuiMenuItem-root.Mui-selected": {
-                    bgcolor: "#007fff",
+                    bgcolor: "primary.main",
                     color: "#fff",
                     fontWeight: 600,
+                    "&:hover": {
+                      bgcolor: "primary.dark",
+                    },
                   },
                 },
               },
@@ -108,22 +111,20 @@ export default function MappingGrid({ data = [] }) {
               width: "100%",
               fontSize: "0.9rem",
               fontWeight: 500,
-              backgroundColor: current ? "#242424" : "#3b0000",
-              color: "#fff",
+              bgcolor: current ? "background.paper" : "error.dark",
               borderRadius: 1.5,
               "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: current ? "#444" : "#800",
+                borderColor: current ? "divider" : "error.light",
               },
               "&:hover .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#888",
+                borderColor: current ? "action.active" : "error.main",
               },
               "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#00b8ff",
+                borderColor: "primary.main",
               },
-              "& .MuiSelect-icon": { color: "#ccc" },
             }}
           >
-            <MenuItem value="" sx={{ color: "#bbb", fontStyle: "italic" }}>
+            <MenuItem value="" sx={{ color: "text.disabled", fontStyle: "italic" }}>
               Unmapped
             </MenuItem>
             {targetOptions.map((opt) => (
@@ -140,7 +141,7 @@ export default function MappingGrid({ data = [] }) {
                   </Typography>
                   <Typography
                     variant="caption"
-                    sx={{ color: "#aaa", fontSize: "0.75rem" }}
+                    sx={{ color: "text.secondary", fontSize: "0.75rem" }}
                   >
                     {opt.split(".")[1]}
                   </Typography>
@@ -238,16 +239,14 @@ export default function MappingGrid({ data = [] }) {
             sx={{
               border: "none",
               "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: "#121212",
-                color: "#fff",
+                bgcolor: "background.default",
                 fontWeight: "bold",
                 position: "sticky",
                 top: 0,
                 zIndex: 1,
               },
               "& .row-unmapped": {
-                backgroundColor: "#4a0000 !important",
-                color: "#fff",
+                bgcolor: "error.dark !important",
               },
               "& .MuiDataGrid-cell": {
                 whiteSpace: "normal",
