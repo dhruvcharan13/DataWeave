@@ -79,9 +79,9 @@ Automatically generates an **detailed report** after every merge, including:
 ---
 
 ## Tech Stack
-Frontend:	React, TypeScript, Next, MUI
-Backend:	FastAPI, Python, Supabase, PostgreSQL
-AI & Data Processing:	Gemini API, Pandas
+- Frontend:	React, TypeScript, Next, MUI
+- Backend:	FastAPI, Python, Supabase, PostgreSQL
+- AI & Data Processing:	Gemini API, Pandas
 
 ## Setup Instructions
 
