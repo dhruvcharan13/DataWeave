@@ -25,7 +25,7 @@ The platform consists of three core modules:
    <img width="1440" height="811" alt="Screenshot 2025-10-27 at 12 56 36 AM" src="https://github.com/user-attachments/assets/edec24c3-5aa9-43d2-ae76-b4548c3cc019" />
 3. **Mapping Page** — Approve or edit AI-suggested mappings and export clean merges
    
-  <img width="1440" height="811" alt="Screenshot 2025-10-27 at 1 08 43 AM" src="https://github.com/user-attachments/assets/58d4c95a-edb5-4eb9-9d27-648ddc5025c5" />
+   <img width="1440" height="811" alt="Screenshot 2025-10-27 at 1 08 43 AM" src="https://github.com/user-attachments/assets/58d4c95a-edb5-4eb9-9d27-648ddc5025c5" />
 
 ---
 
@@ -49,7 +49,7 @@ Every change made to the data in DataWeave is fully traceable:
 
 ---
 
-## 3. 🔒 Secure Data Cleaning
+## 3. Secure Data Cleaning
 > “Clean the data without letting sensitive data leak.”
 
 - Automatically standardizes formats using **regex + LLM classification** (emails, SSNs, account numbers)  
